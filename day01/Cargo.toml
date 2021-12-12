@@ -2,7 +2,17 @@
 name = "day1"
 version = "0.1.0"
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+fixedvec = "0"
+
+[patch.crates-io]
+# byteorder = {path="../crates/byteorder"}
+# heapless = {path="../crates/heapless"}
+
+[profile.dev]
+lto = true
+
+[profile.release]
+lto = true
