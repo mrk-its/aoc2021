@@ -2,11 +2,11 @@ type Board = Vec<Vec<char>>;
 
 type Pos = (usize, usize);
 
-const ROOMS: &[[Pos; 2]] = &[
-    [(3, 3), (3, 2)],
-    [(5, 3), (5, 2)],
-    [(7, 3), (7, 2)],
-    [(9, 3), (9, 2)],
+const ROOMS: &[[Pos; 4]] = &[
+    [(3, 5), (3, 4), (3, 3), (3, 2)],
+    [(5, 5), (5, 4), (5, 3), (5, 2)],
+    [(7, 5), (7, 4), (7, 3), (7, 2)],
+    [(9, 5), (9, 4), (9, 3), (9, 2)],
 ];
 
 const OPENSPACE: &[Pos] = &[
@@ -68,11 +68,22 @@ fn dest_room(board: &Board, c: char, n: usize) -> Option<Pos> {
     let room = ROOMS[index];
     let r0 = get(board, room[0]);
     let r1 = get(board, room[1]);
-    if n == 0 && r0 == None && r1 == None {
+    let r2 = get(board, room[2]);
+    let r3 = get(board, room[3]);
+    if n == 0 && r0 == None && r1 == None && r2 == None && r3 == None {
         return Some(room[0]);
     }
-    if n == 1 && r1 == None && r0 == Some(c) {
+
+    if n == 1 && r0 == Some(c) && r1 == None && r2 == None && r3 == None {
         return Some(room[1]);
+    }
+
+    if n == 2 && r0 == Some(c) && r1 == Some(c) && r2 == None && r3 == None {
+        return Some(room[2]);
+    }
+
+    if n == 3 && r0 == Some(c) && r1 == Some(c) && r2 == Some(c) && r3 == None {
+        return Some(room[3]);
     }
     None
 }
@@ -80,53 +91,34 @@ fn dest_room(board: &Board, c: char, n: usize) -> Option<Pos> {
 fn possible_moves(board: &Board) -> Vec<(Pos, Pos)> {
     let mut out = Vec::new();
     for (room, amp) in ROOMS.iter().zip(AMPS.iter()) {
-        if let Some(c) = get(board, room[0]) {
-            if get(board, room[1]) == None {
-                if c != *amp {
-                    // deeper room, wrong amp
-                    // TODO: find dest - openspace or dest room
-                    if let Some(dest) = dest_room(board, c, 0) {
-                        out.push((room[0], dest));
+        for i in 0..4 {
+            let i = 3-i;
+            let src = room[i];
+            if let Some(c) = get(board, src) {
+                if c != *amp || (0..i).any(|p| get(board, room[p]) != Some(*amp)) {
+                    for n in 0..4 {
+                        if let Some(dest) = dest_room(board, c, n) {
+                            out.push((src, dest));
+                        }
                     }
-                    if let Some(dest) = dest_room(board, c, 1) {
-                        out.push((room[0], dest));
-                    }
-
+    
                     // find dest openspace
                     for &pos in OPENSPACE.iter() {
                         if get(board, pos) == None {
-                            out.push((room[0], pos))
+                            out.push((src, pos))
                         }
                     }                       
-                }
-            }
-        }
-        if let Some(c) = get(board, room[1]) {
-            if c != *amp || get(board, room[0]) != Some(c) {
-                // outer room, wrong amp or deeper room has wrong amp, so we need to move
-                if let Some(dest) = dest_room(board, c, 0) {
-                    out.push((room[1], dest));
-                }
-                if let Some(dest) = dest_room(board, c, 1) {
-                    out.push((room[1], dest));
-                }
 
-                // find dest openspace
-                for &pos in OPENSPACE.iter() {
-                    if get(board, pos) == None {
-                        out.push((room[1], pos))
-                    }
                 }
-            }
+            }    
         }
     }
     for &pos in OPENSPACE.iter() {
         if let Some(c) = get(board, pos) {
-            if let Some(dest) = dest_room(board, c, 0) {
-                out.push((pos, dest));
-            }
-            if let Some(dest) = dest_room(board, c, 1) {
-                out.push((pos, dest));
+            for n in 0..4 {
+                if let Some(dest) = dest_room(board, c, n) {
+                    out.push((pos, dest));
+                }    
             }
         }
     }
@@ -136,9 +128,9 @@ fn possible_moves(board: &Board) -> Vec<(Pos, Pos)> {
 fn do_move(board: &mut Board, src: Pos, dst: Pos) {
     assert!(get(board, dst) == None);
     let amp = get(board, src).unwrap();
-    // println!("{}: {:?} -> {:?}", amp, src, dst);
     set(board, dst, amp);
     set(board, src, '.');
+    //println!("{}: {:?} -> {:?}", amp, src, dst);
     // show(board)
 }
 
@@ -149,7 +141,7 @@ fn get_cost(board: &Board, src: Pos, dst: Pos, cost: i32) -> Option<i32> {
     let src_hall = src.1 == 1;
     let dst_hall = dst.1 == 1;
     
-    let src = match (src_hall, dst_hall) {
+    let src= match (src_hall, dst_hall) {
         (true, true) => {
             ((src.0 as i32 + (dst.0 as i32 - src.0 as i32).signum()) as usize, src.1)
         },
@@ -180,26 +172,45 @@ fn get_cost(board: &Board, src: Pos, dst: Pos, cost: i32) -> Option<i32> {
         return None
     }
 
-    get_cost(board, src, dst, cost + 1)
+    get_cost(board, src, dst, cost + 1 as i32)
 }
 
 fn is_finished(board: &Board) -> bool {
-    return ROOMS.iter().zip(AMPS).all(|(room, &amp)| get(board, room[0]) == Some(amp) && get(board, room[1]) == Some(amp))
+    return ROOMS.iter().zip(AMPS).all(|(room, &amp)| room.iter().all(|&pos| get(board, pos) == Some(amp)))
 }
 
-fn moves(board: &Board, depth: i32, total_cost: i32, min_cost: &mut i32) {
+const PATH: &[(Pos, Pos)] = &[
+    // (ROOMS[3][3], OPENSPACE[6]),
+    // (ROOMS[3][2], OPENSPACE[0]),
+    // (ROOMS[2][3], OPENSPACE[5]),
+    // (ROOMS[2][2], OPENSPACE[4]),
+    // (ROOMS[2][1], OPENSPACE[1]),
+    ];
+
+fn moves(board: &Board, depth: usize, total_cost: i32, min_cost: &mut i32) {
     if total_cost >= *min_cost {
         return
     }
-    
+    // show(board);
+    let mut pmoves = possible_moves(board);
+    pmoves = pmoves.iter().filter(|x| get_cost(board, x.0, x.1, 0).is_some()).cloned().collect();
+    pmoves.sort_by_cached_key(|x|  get_cost(board, x.0, x.1, 0).unwrap());
+    // println!("depth: {}, {:?}", depth, pmoves);
+    if depth < PATH.len() {
+        assert!(pmoves.contains(&PATH[depth]));
+        pmoves = vec![PATH[depth]];
+    }
     let mut moved = false;
-    for (src, dst) in possible_moves(board){
-        if let Some(cost) = get_cost(board, src, dst, 0) {
-            let cost = cost * energy(get(board, src).unwrap());
+    for (n, (src, dst)) in pmoves.iter().enumerate() {
+        if depth < 2 {
+            println!("{} {}", depth, n);
+        }
+        if let Some(cost) = get_cost(board, *src, *dst, 0) {
+            let cost = cost * energy(get(board, *src).unwrap());
 
             moved = true;
             let mut b = board.clone();
-            do_move(&mut b, src, dst);
+            do_move(&mut b, *src, *dst);
             // show(board);
             // println!("cost: {}", cost);
             moves(&b, depth + 1, cost + total_cost, min_cost);
@@ -215,19 +226,19 @@ fn moves(board: &Board, depth: i32, total_cost: i32, min_cost: &mut i32) {
 }
 
 fn main() {
-    let board = parse(include_str!("input.txt"));
+    let board = parse(include_str!("input2.txt"));
     show(&board);
     let mut min_cost = i32::MAX;
     moves(&board, 0, 0, &mut min_cost);
 
     show(&board);
-    println!("part1: {:?}", min_cost);
+    println!("part2: {:?}", min_cost);
 
 }
 
 #[test]
 fn test() {
-    let board = parse(include_str!("test_input1.txt"));
+    let board = parse(include_str!("test_input2.txt"));
     show(&board);
     let mut min_cost = i32::MAX;
     moves(&board, 0, 0, &mut min_cost);
