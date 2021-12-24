@@ -1,9 +1,9 @@
 #[allow(unused_imports)]
 use itertools::{Itertools};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy)]
 struct Point(i64, i64, i64);
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy)]
 struct Cube(Point, Point);
 
 fn overlaps(a: (i64, i64), b: (i64, i64)) -> bool {
@@ -67,18 +67,6 @@ impl Cube {
     fn split2(&self, p1: &Point, p2: &Point) -> Vec<Cube> {
         self.split(p1).iter().flat_map(|c| c.split(p2)).collect()
     }
-    // fn split_by(&self, points: &[Point]) -> Vec<Cube> {
-    //     let mut result = vec![*self];
-    //     for p in points {
-    //         let mut new_result = vec![];
-    //         for r in result {
-    //             new_result.append(&mut r.split(p));
-    //         }
-    //         result = new_result;
-    //     }
-    //     // println!("result: {:?}", result);
-    //     result.iter().collect::<HashSet<_>>().iter().cloned().cloned().collect()
-    // }
 
     fn volume(&self) -> i64 {
         (self.1 .0 - self.0 .0) * (self.1 .1 - self.0 .1) * (self.1 .2 - self.0 .2)
