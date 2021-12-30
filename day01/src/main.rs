@@ -2,7 +2,7 @@
 #![feature(start)]
 #![allow(unused_imports)]
 
-use arrayvec::ArrayVec;
+use staticvec::StaticVec;
 
 use core::panic::PanicInfo;
 
@@ -39,7 +39,7 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
     let parsed = input
         .split('\n')
         .map(|i| i.parse::<i16>().unwrap())
-        .collect::<ArrayVec<i16, 2000>>();
+        .collect::<StaticVec<i16, 2000>>();
     write("done\n");
 
     let part1 = parsed
