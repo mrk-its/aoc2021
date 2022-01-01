@@ -21,7 +21,7 @@ pub fn write(text: &str) {
 }
 
 pub fn write_i16(value: i16) {
-    let digit = (value % 10);
+    let digit = value % 10;
     let rem = value / 10;
     if rem > 0 {
         write_i16(rem);
