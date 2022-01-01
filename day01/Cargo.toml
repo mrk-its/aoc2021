@@ -10,7 +10,9 @@ staticvec = {version="0", default-features = false}
 
 [profile.dev]
 lto = true
-# opt-level = 2
+opt-level = 2
+debug-assertions = false
+overflow-checks = false
 
 [profile.release]
 lto = true
