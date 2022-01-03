@@ -65,6 +65,5 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
     write("part2: ");
     write_i16(part2 as i16);
     write("\n");
-
-    loop {}
+    0
 }
