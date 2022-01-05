@@ -12,12 +12,12 @@ struct Board {
     row_cnt: [u8; 5],
     col_cnt: [u8; 5],
     last_value: u8,
-    won: bool,
+    win: bool,
 }
 
 impl Default for Board {
     fn default() -> Self {
-        Self { won: false, rows: Default::default(), positions: [0xff; 100], marked: [0; 13], row_cnt: [0; 5], col_cnt: [0; 5], last_value: 0}
+        Self { win: false, rows: Default::default(), positions: [0xff; 100], marked: [0; 13], row_cnt: [0; 5], col_cnt: [0; 5], last_value: 0}
     }
 }
 
@@ -40,7 +40,7 @@ fn is_bit_set(bits: &[u8], index: usize) -> bool {
 
 impl Board {
     fn init(&mut self, data: &str) {
-        for (i, row) in data.split('\n').enumerate() {
+        for (i, row) in data.split('\n').enumerate() {  // it fails in release mode when changed to "\n"
             parse_row(row, &mut self.rows[i]);
         }
 
@@ -62,11 +62,11 @@ impl Board {
             let i = pos & 7;
             self.row_cnt[j as usize] += 1;
             self.col_cnt[i as usize] += 1;
-            return self.row_cnt[j as usize] == 5 || self.col_cnt[i as usize] == 5;
+            self.win = self.row_cnt[j as usize] == 5 || self.col_cnt[i as usize] == 5;
         }
-        return false;
+        return self.win;
     }
-    fn score(&self) -> i16 {
+    fn score(&self) -> i16 {  // after changing to i32 it fails on parsing header (wher this function is not called yet !??)
         let sum = self
             .rows
             .iter()
@@ -107,13 +107,12 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 
     for (ii, value) in numbers.iter().enumerate() {
         for (n, board) in boards.iter_mut().enumerate() {
-            if !board.won && board.mark(*value) {
+            if !board.win && board.mark(*value) {
                 io::write("board #");
                 io::write_int(n);
                 io::write(" score: ");
                 io::write_int(board.score());
                 io::writeln();
-                board.won = true;
             }
         }
     }
