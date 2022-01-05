@@ -1,6 +1,6 @@
 [build]
 target = "mos-a800xl-none"
-rustflags = "-Cdebuginfo=0 --emit=llvm-ir"
+rustflags = "-Cdebuginfo=0 -Clink-args=-Wl,-lc"
 
 [unstable]
 build-std = ["core"]
