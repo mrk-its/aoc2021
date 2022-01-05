@@ -1,91 +1,126 @@
-use std::collections::{HashMap, HashSet};
+#![no_std]
+#![feature(start)]
 
-#[derive(Debug, Default)]
+use io;
+
+
+#[derive(Copy, Clone)]
 struct Board {
-    rows: Vec<Vec<i32>>,
-    positions: HashMap<i32, (usize, usize)>,
-    marked: HashSet<i32>,
-    row_cnt: [i32; 5],
-    col_cnt: [i32; 5],
-    last_value: i32,
+    rows: [[u8; 5]; 5],
+    positions: [u8; 100],
+    marked: [u8; 13], // 104 bits, we need 100
+    row_cnt: [u8; 5],
+    col_cnt: [u8; 5],
+    last_value: u8,
+    won: bool,
 }
 
-fn parse_row(row: &str) -> Vec<i32> {
-    row.split(" ")
+impl Default for Board {
+    fn default() -> Self {
+        Self { won: false, rows: Default::default(), positions: [0xff; 100], marked: [0; 13], row_cnt: [0; 5], col_cnt: [0; 5], last_value: 0}
+    }
+}
+
+fn parse_row(row: &str, parsed: &mut [u8; 5]) {
+    for (i, v) in row
+        .split(' ')
         .filter(|v| !v.is_empty())
         .map(|v| v.parse().unwrap())
-        .collect()
+        .enumerate()
+    {
+        parsed[i] = v;
+    }
+}
+
+fn is_bit_set(bits: &[u8], index: usize) -> bool {
+    let idx = (index >> 3) as usize;
+    let bit_pos = index & 7;
+    return bits[idx] & (1 << bit_pos) != 0;
 }
 
 impl Board {
-    fn new(data: &str) -> Self {
-        let mut board = Self {
-            rows: data.split("\n").map(parse_row).collect::<Vec<_>>(),
-            ..Default::default()
-        };
+    fn init(&mut self, data: &str) {
+        for (i, row) in data.split('\n').enumerate() {
+            parse_row(row, &mut self.rows[i]);
+        }
 
-        for (j, row) in board.rows.iter().enumerate() {
+        for (j, row) in self.rows.iter().enumerate() {
             for (i, v) in row.iter().enumerate() {
-                board.positions.entry(*v).or_insert((i, j));
+                self.positions[*v as usize] = (j << 3 | i) as u8;
             }
         }
-        assert!(board.positions.len() == 25);
-        board
     }
 
-    fn mark(&mut self, value: i32) -> bool {
+    fn mark(&mut self, value: u8) -> bool {
         self.last_value = value;
-        self.marked.insert(value);
-        let value = self.positions.get(&value);
-        if let Some((i, j)) = value {
-            self.row_cnt[*j] += 1;
-            self.col_cnt[*i] += 1;
-            return self.row_cnt[*j] == 5 || self.col_cnt[*i] == 5;
+        let idx = (value >> 3) as usize;
+        let bit_pos = value & 7;
+        self.marked[idx] |= 1 << bit_pos;
+        let pos = self.positions[value as usize];
+        if pos != 0xff {
+            let j = pos >> 3;
+            let i = pos & 7;
+            self.row_cnt[j as usize] += 1;
+            self.col_cnt[i as usize] += 1;
+            return self.row_cnt[j as usize] == 5 || self.col_cnt[i as usize] == 5;
         }
         return false;
     }
-    fn score(&self) -> i32 {
+    fn score(&self) -> i16 {
         let sum = self
             .rows
             .iter()
             .flat_map(|v| v.iter())
-            .filter(|v| !self.marked.contains(*v))
-            .fold(0, |acc, v| acc + v);
-        sum * self.last_value
+            .filter(|v| !is_bit_set(&self.marked, **v as usize))
+            .fold(0, |acc, v| acc + *v as i16);
+        sum * self.last_value as i16
     }
 }
 
-fn main() {
+const BOARD_COUNT: usize = 100;
+const NUMBER_COUNT: usize = 100;
+
+#[start]
+fn main(_argc: isize, _argv: *const *const u8) -> isize {
+    // part1: 29440
+    // part2: 13884
     let data = include_str!("input.txt");
+    io::write("parsing header...");
     let mut data = data.split("\n\n");
     let header = data.next().unwrap();
-    let numbers: Vec<i32> = header
-        .split(",")
-        .map(|v| v.parse::<i32>())
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap();
-    println!("header: {:?}", numbers);
 
-    let mut winner_boards: HashSet<usize> = HashSet::default();
+    let mut numbers: [u8; NUMBER_COUNT] = [0; NUMBER_COUNT];
+    let mut boards: [Board; BOARD_COUNT] = [Board::default(); BOARD_COUNT];
 
-    let mut boards = data.map(|data| Board::new(data)).collect::<Vec<_>>();
-    for value in numbers {
+    for (i, v) in header
+        .split(',').map(|v| v.parse::<u8>().unwrap()).enumerate() {
+            numbers[i] = v;
+        }
+    io::write("done\nparsing boards...");
+    // loop {}
+    // return 0;
+    for (i, board_data) in data.enumerate() {
+        io::write(".");
+        boards[i].init(board_data);
+    }
+    io::write("done\n");
+
+    for (ii, value) in numbers.iter().enumerate() {
         for (n, board) in boards.iter_mut().enumerate() {
-            if !winner_boards.contains(&n) && board.mark(value) {
-                println!("board {} won, score: {}", n, board.score());
-                winner_boards.insert(n);
+            if !board.won && board.mark(*value) {
+                io::write("board #");
+                io::write_int(n);
+                io::write(" score: ");
+                io::write_int(board.score());
+                io::writeln();
+                board.won = true;
             }
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    // #[cfg(target_arch="mos")]
+    // loop {}
 
-    #[test]
-    fn test_split() {
-        let parts = " 1   2 3".split(" ").collect::<Vec<&'static str>>();
-        println!("parts: {:?}", parts);
-    }
+    // #[cfg(not(target_arch="mos"))]
+    0
 }

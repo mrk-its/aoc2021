@@ -1,6 +1,8 @@
 [build]
 target = "mos-a800xl-none"
 rustflags = "-Cdebuginfo=0 -Clink-args=-Wl,-lc"
+# rustflags = "-Cdebuginfo=0 -Clink-arg=-Wl,--lto-emit-asm"
+# rustflags = "-Cdebuginfo=0"
 
 [unstable]
 build-std = ["core"]
