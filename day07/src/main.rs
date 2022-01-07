@@ -1,9 +1,15 @@
+#![no_std]
+#![feature(start)]
+io::entry!(main);
+
+use staticvec::StaticVec;
+
 type Number = i32;
 
-fn parse(data: &str) -> Vec<i32> {
+fn parse(data: &str) -> StaticVec<i32, 2000> {
     data.split(',')
         .map(|v| v.parse::<i32>().unwrap())
-        .collect::<Vec<_>>()
+        .collect::<StaticVec<_, 2000>>()
 }
 
 type CostFn = fn(k: Number) -> Number;
@@ -17,6 +23,7 @@ fn cost2(k: Number) -> Number {
 }
 
 fn eval(data: &[i32], v: i32, cost: CostFn) -> i32 {
+    if v & 1 == 0 {io::write(".")};
     data.iter()
         .map(|i| cost((i - v).abs()))
         .fold(0, |a, v| a + v)
@@ -25,6 +32,7 @@ fn eval(data: &[i32], v: i32, cost: CostFn) -> i32 {
 fn find_min(data: &[i32], cost: CostFn) -> Number {
     let lo = *data.iter().min().unwrap();
     let hi = *data.iter().max().unwrap();
+    io::write_int(lo); io::write(" "); io::write_int(hi);
     (lo..=hi).map(|v| eval(data, v, cost)).min().unwrap()
 }
 
@@ -32,10 +40,14 @@ fn main() {
     let data = parse(include_str!("input.txt"));
 
     let min = find_min(&data, cost1);
-    println!("part1: {:?}", min);
+    io::write("part1: ");
+    io::write_int(min);
+    io::writeln();
 
     let min = find_min(&data, cost2);
-    println!("part2: {:?}", min);
+    io::write("part2: ");
+    io::write_int(min);
+    io::writeln();
 }
 
 #[cfg(test)]
