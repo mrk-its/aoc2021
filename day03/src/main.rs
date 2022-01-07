@@ -1,59 +1,81 @@
-fn main() {
+#![no_std]
+#![feature(start)]
+io::entry!(main);
 
-    let input = include_str!("input.txt");
+use staticvec::StaticVec;
 
-    let lines: Vec<_> = input.split("\n").map(|line| line.bytes().map(|v| v & 1).collect::<Vec<_>>()).collect();
-    const BITS: usize = 12;
-    const MASK: u32 = (1 << BITS) - 1;
+const BITS: usize = 12;
+const INPUT: &str = include_str!("input.txt");
 
-    fn most_common(lines: &Vec<Vec<u8>>) -> Vec<u8> {
-        let mut counters = [0; BITS];
-        for line in lines {
-            for (index, char) in line.iter().enumerate() {
-                counters[index] += (char & 1) as i32;
+type Input = StaticVec<u16, 1000>;
+
+fn most_common(lines: &Input) -> u16 {
+    let mut counters = [0; BITS];
+    for line in lines {
+        for index in 0..BITS {
+            counters[index] += (*line >> index) & 1;
+        }
+    }
+    counters
+        .iter()
+        .enumerate()
+        .map(|(index, &v)| {
+            if v >= lines.len() as u16 - v {
+                1 << index
+            } else {
+                0
             }
-        };
-        counters.iter().map(|v| (*v >= lines.len() as i32 - *v) as u8).collect()
-    }
+        })
+        .fold(0, |acc, v| acc | v as u16)
+}
 
-    let counters = most_common(&lines);
+fn main() {
+    let lines: Input = INPUT
+        .split('\n')
+        .map(|line| u16::from_str_radix(line, 2).unwrap())
+        .collect();
 
-    fn get_value(bits: &[u8]) -> u32 {
-        return bits.iter().enumerate().map(|(i, v)| (1 << (BITS - 1 -i)) as u32 * *v as u32).fold(0, |a, v| a + v);
-    }
+    const MASK: u16 = (1 << BITS) - 1;
 
-    let gamma = get_value(&counters);
+    let gamma = most_common(&lines);
     let epsilon = (!gamma) & MASK;
 
-    println!("{} * {} = {}", gamma, epsilon, gamma * epsilon);
-    // assert!(gamma * epsilon == 1092896);
-
+    io::write("part1: ");
+    io::write_int(gamma as i32 * epsilon as i32);
+    io::writeln();
 
     let mut input = lines.clone();
-    for bit_index in 0..BITS {
+    for bit_index in (0..BITS).rev() {
         let cnt = most_common(&input);
-        println!("{:?} {:?}", input, cnt);
-        input = input.iter().filter(|l| l[bit_index] == cnt[bit_index]).cloned().collect();
+        input = input
+            .iter()
+            .filter(|&&l| ((l ^ cnt) >> bit_index) & 1 == 0)
+            .cloned()
+            .collect();
+        io::write(".");
         if input.len() == 1 {
             break;
         }
-    };
-    assert!(input.len() == 1);
-    let o2 = get_value(&input[0]);
-    println!("o2: {}", o2);
+    }
+
+    let o2 = input[0];
 
     let mut input = lines.clone();
-    for bit_index in 0..BITS {
+    for bit_index in (0..BITS).rev() {
         let cnt = most_common(&input);
-        input = input.iter().filter(|l| l[bit_index] == (!cnt[bit_index])&1).cloned().collect();
+        input = input
+            .iter()
+            .filter(|&&l| ((l ^ cnt) >> bit_index) & 1 == 1)
+            .cloned()
+            .collect();
+        io::write(".");
         if input.len() == 1 {
             break;
         }
-    };
-    assert!(input.len() == 1);
-    let co2 = get_value(&input[0]);
+    }
+    let co2 = input[0];
 
-    println!("co2: {}", co2);
-    println!("{}", o2 * co2);
-
+    io::write("\npart2: ");
+    io::write_int(o2 as u32 * co2 as u32);
+    io::writeln();
 }

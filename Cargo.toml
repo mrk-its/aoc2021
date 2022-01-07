@@ -1,14 +1,12 @@
 [workspace]
-members = ["day01", "day02", "day04", "io"]
+members = ["day01", "day02", "day03", "day04", "day06", "io"]
 
 [profile.dev]
 lto = true
-opt-level = 3
-debug-assertions = false
-overflow-checks = false
+opt-level = "s"
 panic = "abort"
 
 [profile.release]
-opt-level = 3
+opt-level = "s"
 lto = true
 panic = "abort"

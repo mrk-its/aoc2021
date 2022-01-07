@@ -1,42 +1,48 @@
-use std::collections::HashMap;
+#![no_std]
+#![feature(start)]
+io::entry!(main);
 
-fn main() {
-    let data = include_str!("input.txt");
+type BigInt = u64;
 
-    let parsed = data.split(',').map(|v| v.parse::<i64>().unwrap()).collect::<Vec<_>>();
+type Population = [BigInt; 10];
 
-    let mut population: HashMap<i64, i64> =  Default::default();
-
-    for i in parsed {
-        let cnt = population.entry(i).or_default();
-        *cnt = *cnt + 1;
+fn parse(data: &str) -> Population {
+    let mut population: Population =  Default::default();
+    for i in data.split(',').map(|v| v.parse::<BigInt>().unwrap()) {
+        population[i as usize] += 1;
     }
+    population
+}
 
-    for _ in 0..256 {
-        let mut new_population: HashMap<i64, i64> = Default::default();
+fn simulate(population: &Population, steps: u16) -> BigInt {
+    let mut population = *population;
+    
+    for _ in 0..steps {
+        let mut new_population: Population = Default::default();
 
-        for (k, v) in population.iter() {
-            if *k > 0 {
-                *new_population.entry(*k - 1).or_default() += v;
+        for k in 0..10 {
+            let v = population[k];
+            if k > 0 {
+                new_population[k-1] += v;
             } else {
-                *new_population.entry(6).or_default() += v;
-                *new_population.entry(8).or_default() += v;
+                new_population[6] += v;
+                new_population[8] += v;
             }
         }
 
         population = new_population;
-
-        println!("{:?}", population);
     }
-
-    println!("{:?}", population.values().fold(0, |a, v| a + v ));
+    population.iter().fold(0, |a, v| a + v )
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+fn main() {
+    let data = include_str!("input.txt");
+    let population = parse(data);
 
-    #[test]
-    fn test1() {
-    }
+    let part1 = simulate(&population, 80);
+    io::write("part1: "); io::write_int(part1); io::writeln();
+
+    let part2 = simulate(&population, 256);
+    io::write("part2: "); io::write_int(part2); io::writeln();
+
 }

@@ -3,7 +3,6 @@
 
 use io;
 
-
 #[derive(Copy, Clone)]
 struct Board {
     rows: [[u8; 5]; 5],
@@ -17,7 +16,15 @@ struct Board {
 
 impl Default for Board {
     fn default() -> Self {
-        Self { win: false, rows: Default::default(), positions: [0xff; 100], marked: [0; 13], row_cnt: [0; 5], col_cnt: [0; 5], last_value: 0}
+        Self {
+            win: false,
+            rows: Default::default(),
+            positions: [0xff; 100],
+            marked: [0; 13],
+            row_cnt: [0; 5],
+            col_cnt: [0; 5],
+            last_value: 0,
+        }
     }
 }
 
@@ -40,7 +47,8 @@ fn is_bit_set(bits: &[u8], index: usize) -> bool {
 
 impl Board {
     fn init(&mut self, data: &str) {
-        for (i, row) in data.split('\n').enumerate() {  // it fails in release mode when changed to "\n"
+        for (i, row) in data.split('\n').enumerate() {
+            // it fails in release mode when changed to "\n"
             parse_row(row, &mut self.rows[i]);
         }
 
@@ -66,22 +74,24 @@ impl Board {
         }
         return self.win;
     }
-    fn score(&self) -> i16 {  // after changing to i32 it fails on parsing header (wher this function is not called yet !??)
+    fn score(&self) -> u16 {
+        // after changing to i32 it fails on parsing header (wher this function is not called yet !??)
         let sum = self
             .rows
             .iter()
             .flat_map(|v| v.iter())
             .filter(|v| !is_bit_set(&self.marked, **v as usize))
-            .fold(0, |acc, v| acc + *v as i16);
-        sum * self.last_value as i16
+            .fold(0, |acc, v| acc + *v as u16);
+        sum * self.last_value as u16
     }
 }
 
 const BOARD_COUNT: usize = 100;
 const NUMBER_COUNT: usize = 100;
 
-#[start]
-fn main(_argc: isize, _argv: *const *const u8) -> isize {
+io::entry!(main);
+
+fn main() {
     // part1: 29440
     // part2: 13884
     let data = include_str!("input.txt");
@@ -93,33 +103,37 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
     let mut boards: [Board; BOARD_COUNT] = [Board::default(); BOARD_COUNT];
 
     for (i, v) in header
-        .split(',').map(|v| v.parse::<u8>().unwrap()).enumerate() {
-            numbers[i] = v;
-        }
+        .split(',')
+        .map(|v| v.parse::<u8>().unwrap())
+        .enumerate()
+    {
+        numbers[i] = v;
+    }
     io::write("done\nparsing boards...");
-    // loop {}
-    // return 0;
+
     for (i, board_data) in data.enumerate() {
         io::write(".");
         boards[i].init(board_data);
     }
-    io::write("done\n");
+    io::write("done\nplaying...");
+    let mut first_score = None;
+    let mut last_score = 0;
 
-    for (ii, value) in numbers.iter().enumerate() {
-        for (n, board) in boards.iter_mut().enumerate() {
-            if !board.win && board.mark(*value) {
-                io::write("board #");
-                io::write_int(n);
-                io::write(" score: ");
-                io::write_int(board.score());
-                io::writeln();
+    for &value in numbers.iter() {
+        for board in boards.iter_mut() {
+            if !board.win && board.mark(value) {
+                last_score = board.score();
+                if first_score.is_none() {
+                    first_score = Some(last_score);
+                }
+                io::write(".");
             }
         }
     }
 
-    // #[cfg(target_arch="mos")]
-    // loop {}
-
-    // #[cfg(not(target_arch="mos"))]
-    0
+    io::write("\npart1: ");
+    io::write_int(first_score.unwrap());
+    io::write("\npart2: ");
+    io::write_int(last_score);
+    io::writeln();
 }

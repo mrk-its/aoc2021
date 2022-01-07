@@ -1,11 +1,10 @@
 #![no_std]
 #![feature(start)]
+io::entry!(main);
 
 use staticvec::StaticVec;
-use io;
 
-#[start]
-fn main(_argc: isize, _argv: *const *const u8) -> isize {
+fn main() {
     let input = include_str!("input.txt");
 
     // let regex = safe_regex::regex!(b".*");
@@ -40,5 +39,4 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
     io::write("part2: ");
     io::write_int(part2 as i16);
     io::write("\n");
-    0
 }
