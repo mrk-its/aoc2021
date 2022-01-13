@@ -23,15 +23,15 @@ pub fn writeln() {
 #[inline(never)]
 pub fn write_int<T>(value: T)
 where
-    T: num::Integer + num::NumCast,
+    T: num_integer::Integer + num_traits::NumCast,
 {
-    let _10: T = num::cast::cast(10u8).unwrap_or(num::one());
+    let _10: T = num_traits::cast::cast(10u8).unwrap_or(num_traits::identities::one());
     let (value, digit) = value.div_rem(&_10);
-    if value > num::zero() {
+    if value > num_traits::identities::zero() {
         write_int(value);
     }
     unsafe {
-        let digit: u8 = num::cast::cast(digit).unwrap_or(0);
+        let digit: u8 = num_traits::cast::cast(digit).unwrap_or(0);
         putchar(48 + digit);
     }
 }
