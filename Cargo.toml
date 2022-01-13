@@ -1,12 +1,12 @@
 [workspace]
-members = ["day01", "day02", "day03", "day04", "day06", "day07", "io"]
+members = ["day01", "day02", "day03", "day04", "day06", "day07", "day25", "io"]
 
 [profile.dev]
 lto = true
-opt-level = "s"
 panic = "abort"
+opt-level = 1
 
 [profile.release]
-opt-level = "s"
+opt-level = 3
 lto = true
 panic = "abort"
