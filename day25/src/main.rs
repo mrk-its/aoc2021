@@ -8,7 +8,7 @@ include!(concat!(env!("OUT_DIR"), "/input.rs"));
 #[path = "atari.rs"]
 mod ui;
 
-#[cfg(not(target_vendor = "sim"))]
+#[cfg(not(target_vendor = "a800xl"))]
 #[path = "sim.rs"]
 mod ui;
 
