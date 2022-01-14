@@ -4,32 +4,33 @@ io::entry!(main);
 
 include!(concat!(env!("OUT_DIR"), "/input.rs"));
 
-const EAST: u8 = 1;
-const SOUTH: u8 = 2;
+#[cfg(target_vendor = "a800xl")]
+#[path = "atari.rs"]
+mod ui;
 
-fn show(board: &Board) {
-    // board.iter().for_each(|line| {
-    //     line.iter().for_each(|c| print!("{}", c));
-    //     println!();
-    // });
-    // println!();
-}
+#[cfg(not(target_vendor = "sim"))]
+#[path = "sim.rs"]
+mod ui;
+
+pub const EAST: u8 = 1;
+pub const SOUTH: u8 = 2;
 
 fn get_c(board: &Board, offs: usize, pos: u8) -> u8 {
+    let pos = 3 - pos;
     let n = (pos & 3) << 1;
     (board[offs] >> n) & 3
 }
 
+const MASKS: [u8; 4] = [!(3 << 6), !(3 << 4), !(3 << 2), !(3 << 0)];
+const SHIFTS1: [u8; 4] = [1 << 6, 1 << 4, 1 << 2, 1 << 0];
+const SHIFTS2: [u8; 4] = [2 << 6, 2 << 4, 2 << 2, 2 << 0];
+
 const fn set_bits(b: u8, pos: u8, val: u8) -> u8 {
-    const MASKS: [u8; 4] = [!3, !(3<<2), !(3<<4), !(3<<6)];
-    const SHIFTS1: [u8; 4] = [1, 1<<2, 1<<4, 1<<6];
-    const SHIFTS2: [u8; 4] = [2, 2<<2, 2<<4, 2<<6];
-    
     let b = b & MASKS[pos as usize];
     match val {
         1 => b | SHIFTS1[pos as usize],
         2 => b | SHIFTS2[pos as usize],
-        _ => b
+        _ => b,
     }
 }
 
@@ -41,7 +42,7 @@ fn set_c(board: &mut Board, offs: usize, pos: u8, c: u8) {
 fn east(offs: usize, pos: u8, i: usize, j: usize, size: (usize, usize)) -> (usize, u8, u8) {
     if i < size.0 - 1 {
         let new_pos = (pos + 1) & 3;
-        let new_offs = offs + if new_pos == 0 {1} else {0};
+        let new_offs = offs + if new_pos == 0 { 1 } else { 0 };
         (new_offs, new_pos, EAST)
     } else {
         (offs - i / 4, 0, EAST)
@@ -57,14 +58,19 @@ fn south(offs: usize, pos: u8, i: usize, j: usize, size: (usize, usize)) -> (usi
     }
 }
 
-fn mv_dir(board: &Board, new_board: &mut Board, size: (usize, usize), dir_cb: fn(usize, u8, usize, usize, (usize, usize)) -> (usize, u8, u8)) -> bool {
+fn mv_dir(
+    board: &Board,
+    new_board: &mut Board,
+    size: (usize, usize),
+    dir_cb: fn(usize, u8, usize, usize, (usize, usize)) -> (usize, u8, u8),
+) -> bool {
     *new_board = *board;
     let mut moved = false;
     let mut offs = 0;
     let mut pos: u8 = 0;
 
     for j in 0..size.1 {
-        for i in 0..size.0 {      
+        for i in 0..size.0 {
             let c = get_c(board, offs, pos as u8);
 
             let (new_offs, new_pos, val) = dir_cb(offs, pos, i, j, size);
@@ -89,31 +95,25 @@ fn mv_dir(board: &Board, new_board: &mut Board, size: (usize, usize), dir_cb: fn
     moved
 }
 
-fn mv(board: &mut Board, new_board: &mut Board, size: (usize, usize)) -> bool {
-    let moved1 = mv_dir(board, new_board, size, east);
-    let moved2 = mv_dir(new_board, board, size, south);
-    moved1 || moved2
-}
-
 fn main() {
     let mut board1 = INPUT;
     let mut board2: Board = [0; INPUT_SIZE.1 * ROW_SIZE];
 
-    // show(&board);
+    let mut display = ui::Display::default();
     let mut cnt: usize = 0;
     loop {
-        let moved = mv(&mut board1, &mut board2, INPUT_SIZE);
+        let moved1 = mv_dir(&board1, &mut board2, INPUT_SIZE, east);
+        display.show(&board2, cnt, EAST);
+
+        let moved2 = mv_dir(&board2, &mut board1, INPUT_SIZE, south);
         cnt += 1;
-        // if cnt == 10 {
-        //     break;
-        // }
-        io::write_int(cnt);
-        io::write("\n");
-        // show(&board);
+
+        display.show(&board1, cnt, SOUTH);
+        let moved = moved1 || moved2;
+
+        // if cnt == 10 {break;}
         if !moved {
             break;
         }
     }
-    io::write("\npart1: ");
-    io::write_int(cnt);
 }

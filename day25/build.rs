@@ -28,18 +28,19 @@ fn main() {
                             '>' => 1,
                             'v' => 2,
                             _ => 0,
-                        } << (i * 2))
+                        } << (6 - i * 2))
                     })
                 })
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
 
-    array_string.push_str(&format!("type Board = [u8; {}];\n", row_w * h));
-    array_string.push_str(&format!("const INPUT: Board = {:?};\n", data));
+    array_string.push_str(&format!("pub type Board = [u8; {}];\n", row_w * h));
+    array_string.push_str(&format!("pub const INPUT: Board = {:?};\n", data));
     array_string.push_str(&format!(
-        "const INPUT_SIZE: (usize, usize) = {:?};\nconst ROW_SIZE: usize = {};",
-        (w, h), row_w
+        "pub const INPUT_SIZE: (usize, usize) = {:?};\nconst ROW_SIZE: usize = {};",
+        (w, h),
+        row_w
     ));
 
     fs::write(&dest_path, array_string).unwrap();
