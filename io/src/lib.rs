@@ -12,15 +12,14 @@ extern "C" {
     fn putchar(c: u8);
 }
 
-#[inline(never)]
 pub fn write(text: &str) {
     text.bytes().for_each(|b| unsafe { putchar(b) });
 }
-#[inline(never)]
+
 pub fn writeln() {
     write("\n");
 }
-#[inline(never)]
+
 pub fn write_int<T>(value: T)
 where
     T: num_integer::Integer + num_traits::NumCast,
@@ -33,6 +32,22 @@ where
     unsafe {
         let digit: u8 = num_traits::cast::cast(digit).unwrap_or(0);
         putchar(48 + digit);
+    }
+}
+
+pub fn slice_write_int<T>(value: T, dest: &mut [u8])
+where
+    T: num_integer::Integer + num_traits::NumCast,
+{
+    let dest_len = dest.len();
+    let _10: T = num_traits::cast::cast(10u8).unwrap_or(num_traits::identities::one());
+    let (value, digit) = value.div_rem(&_10);
+
+    let digit: u8 = num_traits::cast::cast(digit).unwrap_or(0);
+    dest[dest_len - 1] = digit + 16;
+
+    if value > num_traits::identities::zero() {
+        slice_write_int(value, &mut dest[0..dest_len - 1]);
     }
 }
 
