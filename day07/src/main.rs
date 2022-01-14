@@ -23,7 +23,9 @@ fn cost2(k: Number) -> Number {
 }
 
 fn eval(data: &[i32], v: i32, cost: CostFn) -> i32 {
-    if v & 1 == 0 {io::write(".")};
+    if v & 1 == 0 {
+        io::write(".")
+    };
     data.iter()
         .map(|i| cost((i - v).abs()))
         .fold(0, |a, v| a + v)
@@ -32,7 +34,9 @@ fn eval(data: &[i32], v: i32, cost: CostFn) -> i32 {
 fn find_min(data: &[i32], cost: CostFn) -> Number {
     let lo = *data.iter().min().unwrap();
     let hi = *data.iter().max().unwrap();
-    io::write_int(lo); io::write(" "); io::write_int(hi);
+    io::write_int(lo);
+    io::write(" ");
+    io::write_int(hi);
     (lo..=hi).map(|v| eval(data, v, cost)).min().unwrap()
 }
 
