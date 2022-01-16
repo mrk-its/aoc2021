@@ -39,7 +39,7 @@ fn set_c(board: &mut Board, offs: usize, pos: u8, c: u8) {
     *b = set_bits(*b, pos, c);
 }
 
-fn east(offs: usize, pos: u8, i: usize, j: usize, size: (usize, usize)) -> (usize, u8, u8) {
+fn east(offs: usize, pos: u8, i: usize, _j: usize, size: (usize, usize)) -> (usize, u8, u8) {
     if i < size.0 - 1 {
         let new_pos = (pos + 1) & 3;
         let new_offs = offs + if new_pos == 0 { 1 } else { 0 };
