@@ -1,5 +1,5 @@
 [package]
-name = "io"
+name = "utils"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 num-integer = {version="0", default-features = false}
 num-traits = {version="0", default-features=false}
+# ufmt = "0"
+# ufmt-write = "0"
+
+ufmt-stdio = "0"

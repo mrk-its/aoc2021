@@ -1,6 +1,8 @@
 #![no_std]
 #![feature(start)]
-io::entry!(main);
+utils::entry!(main);
+
+use ufmt_stdio::*;
 
 use staticvec::StaticVec;
 
@@ -9,12 +11,12 @@ fn main() {
 
     // let regex = safe_regex::regex!(b".*");
 
-    io::write("parsing...");
+    print!("parsing...");
     let parsed = input
         .split('\n')
         .map(|i| i.parse::<i16>().unwrap())
         .collect::<StaticVec<i16, 2000>>();
-    io::write("done\n");
+    println!("done");
 
     let part1 = parsed
         .iter()
@@ -22,9 +24,7 @@ fn main() {
         .filter(|(a, b)| a < b)
         .count();
 
-    io::write("part1: ");
-    io::write_int(part1 as i16);
-    io::write("\n");
+    println!("part1: {}", part1);
 
     let values = parsed
         .iter()
@@ -36,7 +36,5 @@ fn main() {
         .zip(values.skip(1))
         .filter(|(a, b)| b > a)
         .count();
-    io::write("part2: ");
-    io::write_int(part2 as i16);
-    io::write("\n");
+    println!("part2: {}", part2);
 }

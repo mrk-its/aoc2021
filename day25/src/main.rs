@@ -1,6 +1,6 @@
 #![no_std]
 #![feature(start)]
-io::entry!(main);
+utils::entry!(main);
 
 include!(concat!(env!("OUT_DIR"), "/input.rs"));
 
@@ -101,6 +101,8 @@ fn main() {
 
     let mut display = ui::Display::default();
     let mut cnt: usize = 0;
+    // display.show(&board1, cnt, SOUTH);
+
     loop {
         let moved1 = mv_dir(&board1, &mut board2, INPUT_SIZE, east);
         display.show(&board2, cnt, EAST);

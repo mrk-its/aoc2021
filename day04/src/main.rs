@@ -1,7 +1,8 @@
 #![no_std]
 #![feature(start)]
 
-use io;
+utils::entry!(main);
+use ufmt_stdio::*;
 
 #[derive(Copy, Clone)]
 struct Board {
@@ -89,13 +90,11 @@ impl Board {
 const BOARD_COUNT: usize = 100;
 const NUMBER_COUNT: usize = 100;
 
-io::entry!(main);
-
 fn main() {
     // part1: 29440
     // part2: 13884
     let data = include_str!("input.txt");
-    io::write("parsing header...");
+    print!("parsing header...");
     let mut data = data.split("\n\n");
     let header = data.next().unwrap();
 
@@ -109,13 +108,13 @@ fn main() {
     {
         numbers[i] = v;
     }
-    io::write("done\nparsing boards...");
+    print!("done\nparsing boards...");
 
     for (i, board_data) in data.enumerate() {
-        io::write(".");
+        print!(".");
         boards[i].init(board_data);
     }
-    io::write("done\nplaying...");
+    print!("done\nplaying...");
     let mut first_score = None;
     let mut last_score = 0;
 
@@ -126,14 +125,11 @@ fn main() {
                 if first_score.is_none() {
                     first_score = Some(last_score);
                 }
-                io::write(".");
+                print!(".");
             }
         }
     }
 
-    io::write("\npart1: ");
-    io::write_int(first_score.unwrap());
-    io::write("\npart2: ");
-    io::write_int(last_score);
-    io::writeln();
+    println!("\npart1: {}", first_score.unwrap());
+    println!("part2: {}", last_score);
 }

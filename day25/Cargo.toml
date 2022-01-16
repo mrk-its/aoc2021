@@ -6,5 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-io = {path="../io"}
+utils = {path="../utils"}
+ufmt-stdio = "0"
+ufmt = "0"
+ufmt-write = "0"
 volatile-register = "0"
+atari_io = {path="../../atari_io"}

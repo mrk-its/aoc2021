@@ -1,11 +1,13 @@
 #![no_std]
 #![feature(start)]
-io::entry!(main);
+utils::entry!(main);
+
+use ufmt_stdio::*;
 
 fn main() {
     let mut pos = 0;
     let mut depth = 0;
-    io::write("start!\n");
+    println!("start!\n");
     let parsed = include_str!("input.txt").split('\n').map(|line| {
         let mut p = line.split(' ');
         let dir = p.next().unwrap();
@@ -25,9 +27,8 @@ fn main() {
             _ => panic!(),
         }
     }
-    io::write("part1: ");
-    io::write_int(pos * depth);
-    io::writeln();
+
+    println!("part1: {}", pos * depth);
 
     let mut pos = 0;
     let mut depth = 0;
@@ -45,7 +46,5 @@ fn main() {
             _ => panic!(),
         }
     }
-    io::write("part2: ");
-    io::write_int(pos * depth);
-    io::writeln();
+    println!("part2: {}", pos * depth);
 }

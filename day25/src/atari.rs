@@ -1,5 +1,8 @@
 use volatile_register::{RO, RW};
 
+use ufmt_write::uWrite;
+
+
 const DMACTL: usize = 0x22f;
 const DLPTRS: usize = 0x230;
 const TIMER: usize = 18;
@@ -75,6 +78,36 @@ pub struct Display {
     start_t: u32,
 }
 
+struct ScreenMemoryWriter<'a> {
+    buffer: &'a mut [u8],
+    written: usize,
+}
+
+impl<'a> ScreenMemoryWriter<'a> {
+    fn new(buffer: &'a mut [u8]) -> ScreenMemoryWriter<'a> {
+        ScreenMemoryWriter { buffer, written: 0 }
+    }
+}
+
+impl<'a> uWrite for ScreenMemoryWriter<'a> {
+    type Error = ();
+
+    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
+        for b in s.bytes() {
+            if self.written >= self.buffer.len() {
+                return Err(())
+            }
+            self.buffer[self.written] = match b & 0x7f {
+                0..=31 => b + 64,
+                32..=95 => b - 32,
+                _ => b,
+            } | (b & 128);
+            self.written += 1;
+        }
+        Ok(())
+    }
+}
+
 impl Display {
     pub fn show(&mut self, board: &crate::Board, frame_cnt: usize, phase: u8) {
         self.dlist.update(
@@ -87,8 +120,8 @@ impl Display {
         }
         let ticks = t - self.start_t;
         if phase == crate::SOUTH {
-            io::slice_write_int(frame_cnt, &mut self.info[0..5]);
-            io::slice_write_int(ticks, &mut self.info[16..26]);
+            let mut writer = ScreenMemoryWriter::new(&mut self.info);
+            ufmt::uwrite!(&mut writer, "#{}    frames: {}", frame_cnt, ticks).unwrap();
         }
     }
 }

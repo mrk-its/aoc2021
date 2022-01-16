@@ -1,6 +1,7 @@
 #![no_std]
 #![feature(start)]
-io::entry!(main);
+utils::entry!(main);
+use ufmt_stdio::*;
 
 use staticvec::StaticVec;
 
@@ -24,7 +25,7 @@ fn cost2(k: Number) -> Number {
 
 fn eval(data: &[i32], v: i32, cost: CostFn) -> i32 {
     if v & 1 == 0 {
-        io::write(".")
+        print!(".");
     };
     data.iter()
         .map(|i| cost((i - v).abs()))
@@ -34,9 +35,6 @@ fn eval(data: &[i32], v: i32, cost: CostFn) -> i32 {
 fn find_min(data: &[i32], cost: CostFn) -> Number {
     let lo = *data.iter().min().unwrap();
     let hi = *data.iter().max().unwrap();
-    io::write_int(lo);
-    io::write(" ");
-    io::write_int(hi);
     (lo..=hi).map(|v| eval(data, v, cost)).min().unwrap()
 }
 
@@ -44,14 +42,10 @@ fn main() {
     let data = parse(include_str!("input.txt"));
 
     let min = find_min(&data, cost1);
-    io::write("part1: ");
-    io::write_int(min);
-    io::writeln();
+    println!("part1: {}", min);
 
     let min = find_min(&data, cost2);
-    io::write("part2: ");
-    io::write_int(min);
-    io::writeln();
+    println!("part2: {}", min);
 }
 
 #[cfg(test)]

@@ -1,6 +1,8 @@
 #![no_std]
 #![feature(start)]
-io::entry!(main);
+utils::entry!(main);
+
+use ufmt_stdio::*;
 
 use staticvec::StaticVec;
 
@@ -40,9 +42,7 @@ fn main() {
     let gamma = most_common(&lines);
     let epsilon = (!gamma) & MASK;
 
-    io::write("part1: ");
-    io::write_int(gamma as i32 * epsilon as i32);
-    io::writeln();
+    println!("part1: {}", gamma as i32 * epsilon as i32);
 
     let mut input = lines.clone();
     for bit_index in (0..BITS).rev() {
@@ -52,7 +52,7 @@ fn main() {
             .filter(|&&l| ((l ^ cnt) >> bit_index) & 1 == 0)
             .cloned()
             .collect();
-        io::write(".");
+        print!(".");
         if input.len() == 1 {
             break;
         }
@@ -68,14 +68,12 @@ fn main() {
             .filter(|&&l| ((l ^ cnt) >> bit_index) & 1 == 1)
             .cloned()
             .collect();
-        io::write(".");
+        print!(".");
         if input.len() == 1 {
             break;
         }
     }
     let co2 = input[0];
 
-    io::write("\npart2: ");
-    io::write_int(o2 as u32 * co2 as u32);
-    io::writeln();
+    println!("\npart2: {}", o2 as u32 * co2 as u32);
 }

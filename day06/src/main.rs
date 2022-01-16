@@ -1,6 +1,7 @@
 #![no_std]
 #![feature(start)]
-io::entry!(main);
+utils::entry!(main);
+use ufmt_stdio::*;
 
 type BigInt = u64;
 
@@ -57,12 +58,8 @@ fn main() {
     let population = parse(data);
 
     let part1 = simulate(&population, 80);
-    io::write("part1: ");
-    io::write_int(part1);
-    io::writeln();
+    println!("part1: {}", part1);
 
     let part2 = simulate(&population, 256);
-    io::write("part2: ");
-    io::write_int(part2);
-    io::writeln();
+    println!("part2: {}", part2);
 }

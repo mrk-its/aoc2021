@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 staticvec = {version="0", default-features = false}
-io = {path="../io"}
+utils = {path="../utils"}
+ufmt-stdio = "0"
