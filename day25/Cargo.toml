@@ -7,8 +7,8 @@ edition = "2021"
 
 [dependencies]
 utils = {path="../utils"}
-ufmt-stdio = "0"
-ufmt = "0"
-ufmt-write = "0"
-volatile-register = "0"
-a800xl-utils = "0"
+ufmt-stdio = "0.1"
+ufmt = "0.1"
+ufmt-write = "0.1"
+volatile-register = "0.2"
+a800xl-utils = "0.1"

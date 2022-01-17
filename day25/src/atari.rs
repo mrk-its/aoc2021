@@ -3,10 +3,19 @@ use a800xl_utils::{
     screen::{clear_atract, ScreenMemoryWriter},
 };
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
 struct DisplayListLine {
     pub mode: u8,
-    pub addr: u16,
+    pub addr: *mut u8,
+}
+
+impl Default for DisplayListLine {
+    fn default() -> Self {
+        Self {
+            mode: Default::default(),
+            addr: 0 as *mut u8,
+        }
+    }
 }
 
 #[repr(C, align(512))]
@@ -19,18 +28,18 @@ struct DisplayList {
 }
 
 impl DisplayList {
-    pub fn update(&mut self, memory_addr: u16, info_addr: u16) {
+    pub fn update(&mut self, memory_addr: *mut u8, info_addr: *mut u8) {
         let mut addr = memory_addr;
         for line in self.lines.iter_mut() {
             line.mode = 0x4e;
             line.addr = addr;
-            addr += 35;
+            addr = unsafe { addr.add(35) };
         }
         self.info.addr = info_addr;
-        self.jmp.addr = self as *mut DisplayList as u16;
+        self.jmp.addr = self as *mut DisplayList as *mut u8;
 
         unsafe {
-            *consts::SDLST = self.jmp.addr;
+            *consts::SDLST = self.jmp.addr as *mut u8;
             *consts::SDMCTL = 0x21;
         }
     }
@@ -43,12 +52,12 @@ impl Default for DisplayList {
             lines: [Default::default(); 137],
             info: DisplayListLine {
                 mode: 0x42,
-                addr: 0,
+                addr: 0 as *mut u8,
             },
             sep: [0x70],
             jmp: DisplayListLine {
                 mode: 0x41,
-                addr: 0,
+                addr: 0 as *mut u8,
             },
         }
     }
@@ -64,8 +73,8 @@ pub struct Display {
 impl Display {
     pub fn show(&mut self, board: &crate::Board, frame_cnt: usize, phase: u8) {
         self.dlist.update(
-            board as *const crate::Board as u16,
-            &self.info as *const [u8; 32] as u16,
+            board as *const crate::Board as *mut u8,
+            &self.info as *const [u8; 32] as *mut u8,
         );
         let t = clock();
         if self.start_t == 0 {
