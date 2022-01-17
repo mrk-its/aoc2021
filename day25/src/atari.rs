@@ -75,6 +75,7 @@ impl Display {
         if phase == crate::SOUTH {
             let mut writer = ScreenMemoryWriter::new(&mut self.info);
             ufmt::uwrite!(&mut writer, "#{}    frames: {}", frame_cnt, ticks).unwrap();
+            clear_atract();
         }
     }
 }
