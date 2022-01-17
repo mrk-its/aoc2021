@@ -4,5 +4,12 @@
     "source=${localWorkspaceFolder}/../a800xl-utils,target=/workspaces/a800xl-utils,type=bind",
     "source=${localWorkspaceFolder}/../ufmt-stdio,target=/workspaces/ufmt-stdio,type=bind"
   ],
+  "settings": {
+    "rust-analyzer.checkOnSave.allTargets": false,
+    "rust-analyzer.diagnostics.disabled": [
+        "unresolved-macro-call",
+        "macro-error"
+    ]
+  },
   "extensions": ["matklad.rust-analyzer", "serayuzgur.crates"]
 }
