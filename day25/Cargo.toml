@@ -11,4 +11,4 @@ ufmt-stdio = "0"
 ufmt = "0"
 ufmt-write = "0"
 volatile-register = "0"
-atari_io = {path="../../atari_io"}
+a800xl-utils = "0"

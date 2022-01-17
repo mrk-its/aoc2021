@@ -1,4 +1,8 @@
 {
   "image": "mrkits/rust-mos",
+  "mounts": [
+    "source=${localWorkspaceFolder}/../a800xl-utils,target=/workspaces/a800xl-utils,type=bind",
+    "source=${localWorkspaceFolder}/../ufmt-stdio,target=/workspaces/ufmt-stdio,type=bind"
+  ],
   "extensions": ["matklad.rust-analyzer", "serayuzgur.crates"]
 }

@@ -15,4 +15,6 @@ panic = "abort"
 ufmt = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
 ufmt-write = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
 
-ufmt-stdio = {path="../ufmt-stdio"}
+# ufmt-stdio = {path = "../ufmt-stdio"}
+ufmt-stdio = {git = "https://github.com/mrk-its/ufmt-stdio", branch="mos"}
+a800xl-utils = {git = "https://github.com/mrk-its/a800xl-utils"}
