@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 utils = {path="../utils"}
-ufmt-stdio = "0.1"
+ufmt-stdio = "0.2.0"
 ufmt = "0.1"
 ufmt-write = "0.1"
 volatile-register = "0.2"

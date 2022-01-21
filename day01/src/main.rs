@@ -1,10 +1,16 @@
 #![no_std]
 #![feature(start)]
+#![feature(default_alloc_error_handler)]
+
+extern crate alloc;
+extern crate mos_alloc;
+
 utils::entry!(main);
 
 use ufmt_stdio::*;
+use alloc::vec::Vec;
 
-use staticvec::StaticVec;
+// use staticvec::StaticVec;
 
 fn main() {
     let input = include_str!("input.txt");
@@ -12,10 +18,12 @@ fn main() {
     // let regex = safe_regex::regex!(b".*");
 
     print!("parsing...");
-    let parsed = input
+    let parser = input
         .split('\n')
-        .map(|i| i.parse::<i16>().unwrap())
-        .collect::<StaticVec<i16, 2000>>();
+        .map(|i| i.parse::<i16>().unwrap());
+
+    let mut parsed = Vec::with_capacity(2000);
+    parsed.extend(parser);
     println!("done");
 
     let part1 = parsed

@@ -1,15 +1,16 @@
 #![no_std]
 #![feature(start)]
+
 utils::entry!(main);
 
 use ufmt_stdio::*;
 
-use staticvec::StaticVec;
+use arrayvec::ArrayVec;
 
 const BITS: usize = 12;
 const INPUT: &str = include_str!("input.txt");
 
-type Input = StaticVec<u16, 1000>;
+type Input = ArrayVec<u16, 1000>;
 
 fn most_common(lines: &Input) -> u16 {
     let mut counters = [0; BITS];

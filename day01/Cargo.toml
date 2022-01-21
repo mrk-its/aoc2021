@@ -5,16 +5,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-staticvec = {version="0", default-features = false}
+# staticvec = {version="0", default-features = false}
 # arrayvec = {version="0", default-features = false}
 utils = {path="../utils"}
 ufmt-stdio = "0"
+a800xl-utils = "0"
+mos-alloc = "0.1.0"
 
 [profile.dev]
 lto = true
-opt-level = 2
+opt-level = 1
 debug-assertions = false
 overflow-checks = false
-
-[profile.release]
-lto = true

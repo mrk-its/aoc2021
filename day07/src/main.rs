@@ -3,14 +3,14 @@
 utils::entry!(main);
 use ufmt_stdio::*;
 
-use staticvec::StaticVec;
+use arrayvec::ArrayVec;
 
 type Number = i32;
 
-fn parse(data: &str) -> StaticVec<i32, 2000> {
+fn parse(data: &str) -> ArrayVec<i32, 2000> {
     data.split(',')
         .map(|v| v.parse::<i32>().unwrap())
-        .collect::<StaticVec<_, 2000>>()
+        .collect::<ArrayVec<_, 2000>>()
 }
 
 type CostFn = fn(k: Number) -> Number;

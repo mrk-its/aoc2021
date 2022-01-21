@@ -1,9 +1,7 @@
 {
   "image": "mrkits/rust-mos",
-  "mounts": [
-    "source=${localWorkspaceFolder}/../a800xl-utils,target=/workspaces/a800xl-utils,type=bind",
-    "source=${localWorkspaceFolder}/../ufmt-stdio,target=/workspaces/ufmt-stdio,type=bind"
-  ],
+  "workspaceMount": "source=/home/mrk/repos,target=/workspaces/repos,type=bind",
+  "workspaceFolder": "/workspaces/repos/aoc2021",
   "settings": {
     "rust-analyzer.checkOnSave.allTargets": false,
     "rust-analyzer.diagnostics.disabled": [

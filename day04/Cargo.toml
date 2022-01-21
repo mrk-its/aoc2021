@@ -8,8 +8,3 @@ edition = "2021"
 [dependencies]
 utils = {path="../utils"}
 ufmt-stdio = "0"
-
-[profile.release]
-opt-level = 3
-lto = true
-panic = "abort"
