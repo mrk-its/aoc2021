@@ -9,8 +9,7 @@ edition = "2021"
 # arrayvec = {version="0", default-features = false}
 utils = {path="../utils"}
 ufmt-stdio = "0"
-a800xl-utils = "0"
-mos-alloc = "0.1.0"
+mos-alloc = "0.2.0"
 
 [profile.dev]
 lto = true

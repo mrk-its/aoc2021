@@ -7,24 +7,26 @@ extern crate mos_alloc;
 
 utils::entry!(main);
 
-use ufmt_stdio::*;
 use alloc::vec::Vec;
+use ufmt_stdio::*;
 
 // use staticvec::StaticVec;
 
 fn main() {
-    let input = include_str!("input.txt");
+    let input = utils::iter_lines!("input.txt");
 
     // let regex = safe_regex::regex!(b".*");
 
-    print!("parsing...");
-    let parser = input
-        .split('\n')
-        .map(|i| i.parse::<i16>().unwrap());
+    //print!("parsing...");
+    let parser = input.map(|i| {
+        unsafe { core::str::from_utf8_unchecked(i) }
+            .parse::<i16>()
+            .unwrap()
+    });
 
     let mut parsed = Vec::with_capacity(2000);
     parsed.extend(parser);
-    println!("done");
+    //println!("done");
 
     let part1 = parsed
         .iter()
