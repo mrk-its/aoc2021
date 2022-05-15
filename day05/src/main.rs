@@ -1,64 +1,127 @@
-use std::collections::{HashMap, HashSet};
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
 
-type Board = HashMap<(i32, i32), i32>;
+extern crate alloc;
+extern crate mos_alloc;
 
-fn point(board: &mut Board, coords: (i32, i32)) {
-    // println!("paint {:?}", coords);
-    let v = board.entry(coords).or_default();
-    *v += 1;
+use alloc::vec::Vec;
+use bstr::ByteSlice;
+use ufmt_stdio::*;
+
+utils::entry!(main);
+
+const WIDTH: usize = 1024;
+const HEIGHT: usize = 64;
+
+struct Board {
+    data: [u8; WIDTH / 4 * HEIGHT],
 }
 
-fn draw(board: &mut Board, p1: (i32, i32), p2: (i32, i32)) {
-    // println!("draw");
-    let dx = (p2.0 - p1.0).signum();
-    let dy = (p2.1 - p1.1).signum();
-
-    let mut p = p1;
-
-    point(board, p);
-
-    while p != p2 {
-        p = (p.0 + dx, p.1 + dy);
-        point(board, p);
+impl Default for Board {
+    fn default() -> Self {
+        Self {
+            data: [0; WIDTH / 4 * HEIGHT],
+        }
     }
 }
 
-fn main() {
-    let data = include_str!("input.txt");
-    let parsed = data
-        .split('\n')
+impl Board {
+    pub fn set(&mut self, coords: (i16, i16)) -> bool {
+        let offs = coords.1 as usize * (WIDTH / 4) + coords.0 as usize / 4;
+        let bit_pos = (coords.0 & 3) * 2;
+
+        let inp = self.data[offs];
+        let mut v = (inp >> bit_pos) & 3;
+        v = (v + 1).min(3);
+
+        self.data[offs] = inp & !(3 << bit_pos) | (v << bit_pos);
+        v == 2
+    }
+}
+
+fn point(board: &mut Board, coords: (i16, i16), cnt: &mut u32) {
+    if coords.1 >= 0 && coords.1 < (HEIGHT as i16) && board.set(coords) {
+        *cnt += 1;
+    }
+}
+
+fn draw(board: &mut Board, mut p1: (i16, i16), p2: (i16, i16), cnt: &mut u32) {
+    let dx = (p2.0 - p1.0).signum();
+    let dy = (p2.1 - p1.1).signum();
+
+    loop {
+        point(board, p1, cnt);
+        if p1 == p2 {
+            return;
+        }
+        p1 = (p1.0 + dx, p1.1 + dy);
+    }
+}
+
+fn get_input() -> impl Iterator<Item = ((i16, i16), (i16, i16))> {
+    utils::iter_lines!("input.txt")
         .map(|row| {
-            row.split(" -> ")
+            row.split_str(b" -> ")
                 .map(|coords| {
                     coords
-                        .split(',')
-                        .map(|v| v.parse::<i32>().unwrap())
+                        .split_str(b",")
+                        .map(|v| utils::to_str(v).parse::<i16>().unwrap())
                         .collect::<Vec<_>>()
                 })
                 .collect::<Vec<_>>()
         })
         .map(|line| ((line[0][0], line[0][1]), (line[1][0], line[1][1])))
-        .collect::<Vec<_>>();
+}
 
-    let mut board = Board::default();
+fn main() {
+    // mos_alloc::set_limit(8192);
+    // let parsed = utils::iter_lines!("input.txt")
+    //     .map(|row| {
+    //         row.split_str(b" -> ")
+    //             .map(|coords| {
+    //                 coords
+    //                     .split_str(b",")
+    //                     .map(|v| utils::to_str(v).parse::<i16>().unwrap())
+    //                     .collect::<Vec<_>>()
+    //             })
+    //             .collect::<Vec<_>>()
+    //     })
+    //     .map(|line| ((line[0][0], line[0][1]), (line[1][0], line[1][1])))
+    //     .collect::<Vec<_>>();
 
-    for (p1, p2) in parsed
-        .iter()
-        .filter(|(p1, p2)| p1.0 == p2.0 || p1.1 == p2.1)
-    {
-        draw(&mut board, *p1, *p2);
+    let mut count = 0;
+
+    for slice in 0..16 {
+        let y_offs = slice * HEIGHT as i16;
+        let mut board = Board::default();
+        for (p1, p2) in get_input().filter(|(p1, p2)| p1.0 == p2.0 || p1.1 == p2.1) {
+            draw(
+                &mut board,
+                (p1.0, p1.1 - y_offs),
+                (p2.0, p2.1 - y_offs),
+                &mut count,
+            );
+        }
     }
-    let count = board.iter().filter(|v| *v.1 > 1).count();
-    println!("{}", count);
+    println!("part1: {}", count);
 
-    let mut board = Board::default();
+    let mut count = 0;
 
-    for (p1, p2) in parsed.iter() {
-        draw(&mut board, *p1, *p2);
+    for slice in 0..16 {
+        let y_offs = slice * HEIGHT as i16;
+        let mut board = Board::default();
+        for (p1, p2) in get_input() {
+            draw(
+                &mut board,
+                (p1.0, p1.1 - y_offs),
+                (p2.0, p2.1 - y_offs),
+                &mut count,
+            );
+        }
     }
 
-    let count = board.iter().filter(|v| *v.1 > 1).count();
-    println!("{}", count);
+    println!("part2: {}", count);
 }
 
 #[cfg(test)]
@@ -68,8 +131,9 @@ mod tests {
     #[test]
     fn test1() {
         let mut board = Board::default();
-        draw(&mut board, (0, 0), (0, 0));
-        draw(&mut board, (0, 0), (0, 1));
+        let mut cnt = 0;
+        draw(&mut board, (0, 0), (0, 0), &mut cnt);
+        draw(&mut board, (0, 0), (0, 1), &mut cnt);
         println!("board: {:?}", board);
     }
 }

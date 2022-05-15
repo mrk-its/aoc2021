@@ -1,13 +1,18 @@
 [workspace]
-members = ["day01", "day02", "day03", "day04", "day06", "day07", "day25", "utils"]
+members = ["day01", "day02", "day03", "day04", "day05", "day06", "day07", "day08", "day25","utils"]
 
 [profile.dev]
 lto = true
-opt-level = 1
+opt-level = "s"
+debug = 2
+codegen-units = 1
+panic = "abort"
 
 [profile.release]
-opt-level = 3
+opt-level = "s"
 lto = true
+debug = 2
+panic = "abort"
 
 [patch.crates-io]
 ufmt = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
