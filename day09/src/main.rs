@@ -17,27 +17,7 @@ const WIDTH: usize = 100;
 const HEIGHT: usize = 100;
 
 const VISITED_SIZE: usize = WIDTH * HEIGHT / 8;
-type Visited = BitSet<VISITED_SIZE>;
-
-struct BitSet<const N: usize> {
-    bits: [u8; N],
-}
-
-impl<const N: usize> BitSet<N> {
-    fn new() -> Self {
-        Self { bits: [0; N] }
-    }
-    fn contains(&self, index: usize) -> bool {
-        let offs = index / 8;
-        let bit_offs = index & 7;
-        return (self.bits[offs] >> bit_offs) & 1 > 0;
-    }
-    fn insert(&mut self, index: usize) {
-        let offs = index / 8;
-        let bit_offs = index & 7;
-        self.bits[offs] |= 1 << bit_offs;
-    }
-}
+type Visited = utils::BitSet<VISITED_SIZE>;
 
 fn parse_board<'a>(input: impl Iterator<Item = &'a [u8]>) -> Board {
     input

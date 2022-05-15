@@ -1,12 +1,20 @@
-use itertools::Itertools;
-use std::{collections::HashSet, time::Duration};
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
+
+utils::entry!(main);
+extern crate alloc;
+extern crate mos_alloc;
+
+use alloc::vec::Vec;
+use ufmt_stdio::*;
+use utils::BitSet;
 
 type Board = Vec<Vec<i32>>;
 
-fn parse_board(input: &str) -> Board {
+fn parse_board<'a>(input: impl Iterator<Item = &'a [u8]>) -> Board {
     input
-        .split('\n')
-        .map(|line| line.bytes().map(|b| (b - 48) as i32).collect::<Vec<_>>())
+        .map(|line| line.iter().map(|b| (b - 48) as i32).collect::<Vec<_>>())
         .collect::<Vec<_>>()
 }
 
@@ -16,41 +24,36 @@ fn board_size(board: &Board) -> (usize, usize) {
     (w, h)
 }
 
-fn neighbours(x: usize, y: usize, w: usize, h: usize) -> Vec<(usize, usize)> {
+fn neighbours(x: usize, y: usize, w: usize, h: usize) -> impl Iterator<Item = (usize, usize)> {
     let x = x as i32;
     let y = y as i32;
 
-    let dirs = (-1..=1)
+    (-1..=1)
         .flat_map(|y| (-1..=1).map(move |x| (x, y)))
         .filter(|(x, y)| *x != 0 || *y != 0)
-        .collect_vec();
-
-    dirs
-        .iter()
-        .map(|(kx, ky)| ((x + *kx) as usize, (y + *ky) as usize))
-        .filter(|(x, y)| x < &w && y < &h)
-        .collect_vec()
+        .map(move |(kx, ky)| ((x + kx) as usize, (y + ky) as usize))
+        .filter(move |(x, y)| x < &w && y < &h)
 }
 
 fn step(board: &mut Board, flash_cnt: &mut i32) {
     let (w, h) = board_size(board);
-    let mut flashed: HashSet<(usize, usize)> = HashSet::new();
+    let mut flashed: BitSet<100> = BitSet::new();
     for row in board.iter_mut() {
         for energy in row {
             *energy += 1
         }
-    };
+    }
     loop {
         let prev_flash_cnt = *flash_cnt;
         for y in 0..h {
             for x in 0..w {
-                if board[y][x] > 9 && !flashed.contains(&(x, y)) {
+                if board[y][x] > 9 && !flashed.contains(y * w + x) {
                     *flash_cnt += 1;
                     // flash!
                     for (nx, ny) in neighbours(x, y, w, h) {
                         board[ny][nx] += 1;
                     }
-                    flashed.insert((x, y));
+                    flashed.insert(y * w + x);
                 }
             }
         }
@@ -64,19 +67,19 @@ fn step(board: &mut Board, flash_cnt: &mut i32) {
                 *energy = 0;
             }
         }
-    };
-}
-
-fn show(board: &Board) {
-    for row in board {
-        println!("{}", row.iter().map(|e| char::from_u32(48 + *e as u32).unwrap()).collect::<String>());
     }
 }
 
+// fn show(board: &Board) {
+//     for row in board {
+//         println!("{}", row.iter().map(|e| char::from_u32(48 + *e as u32).unwrap()).collect::<String>());
+//     }
+// }
+
 fn main() {
-    let mut board = parse_board(include_str!("input.txt"));
+    let mut board = parse_board(utils::iter_lines!("input.txt"));
     let (w, h) = board_size(&board);
-    show(&board);
+    // show(&board);
     let mut part1_cnt = 0;
     let mut flash_cnt = 0;
     let mut n_step = 0;
@@ -84,9 +87,8 @@ fn main() {
         let before = flash_cnt;
         step(&mut board, &mut flash_cnt);
         let just_flashed = flash_cnt - before;
-        show(&board);
-        println!();
-        std::thread::sleep(Duration::from_millis(50));
+        // show(&board);
+        // println!();
         n_step += 1;
         if n_step == 100 {
             part1_cnt = flash_cnt;

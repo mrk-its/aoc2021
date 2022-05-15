@@ -36,3 +36,23 @@ macro_rules! iter_lines {
 pub fn to_str(data: &[u8]) -> &str {
     unsafe { core::str::from_utf8_unchecked(data) }
 }
+
+pub struct BitSet<const N: usize> {
+    bits: [u8; N],
+}
+
+impl<const N: usize> BitSet<N> {
+    pub fn new() -> Self {
+        Self { bits: [0; N] }
+    }
+    pub fn contains(&self, index: usize) -> bool {
+        let offs = index / 8;
+        let bit_offs = index & 7;
+        return (self.bits[offs] >> bit_offs) & 1 > 0;
+    }
+    pub fn insert(&mut self, index: usize) {
+        let offs = index / 8;
+        let bit_offs = index & 7;
+        self.bits[offs] |= 1 << bit_offs;
+    }
+}
