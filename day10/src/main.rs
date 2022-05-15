@@ -1,92 +1,109 @@
-use itertools::{Itertools, PutBack, put_back};
-use std::{collections::{HashSet, hash_map, HashMap}, str::Chars};
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
 
-fn parse(input: &str) -> Vec<&str> {
-    input
-        .split('\n')
-        .collect_vec()
-}
+utils::entry!(main);
+extern crate alloc;
+extern crate mos_alloc;
+
+use core::slice::Iter;
+
+use alloc::vec::Vec;
+use ufmt_stdio::*;
+
+use itertools::{put_back, PutBack};
 
 enum ChunkError {
-    Incomplete(Vec<char>),
-    Corrupted(char),
+    Incomplete(Vec<u8>),
+    Corrupted(u8),
 }
 
-fn read_chunks(chars: &mut PutBack<Chars>, stack: &mut Vec<char>) -> Result<bool, ChunkError> {
+fn read_chunks(chars: &mut PutBack<Iter<u8>>, stack: &mut Vec<u8>) -> Result<bool, ChunkError> {
     loop {
         let is_empty = read_chunk(chars, stack)?;
         if is_empty {
             break;
         }
-    };
+    }
     return Ok(false);
 }
 
+fn is_closing(c: &u8) -> bool {
+    [b'}', b'>', b')', b']'].contains(c)
+}
 
-fn read_chunk(chars: &mut PutBack<Chars>, stack: &mut Vec<char>) -> Result<bool, ChunkError> {
-    let PAIRS: HashMap<char, char> = [('{', '}'), ('<', '>'), ('(', ')'), ('[', ']')].into_iter().collect();
-    let OPENING: HashSet<char> = PAIRS.keys().cloned().collect();
-    let CLOSING: HashSet<char> = PAIRS.values().cloned().collect();
+fn get_closing(c: u8) -> u8 {
+    match c {
+        b'{' => b'}',
+        b'<' => b'>',
+        b'(' => b')',
+        b'[' => b']',
+        _ => panic!(),
+    }
+}
 
+fn read_chunk(chars: &mut PutBack<Iter<u8>>, stack: &mut Vec<u8>) -> Result<bool, ChunkError> {
     let s = chars.next();
     let s = match s {
         Some(s) => s,
-        None => return Ok(true)  // empty chunk, end of chars
+        None => return Ok(true), // empty chunk, end of chars
     };
-    if CLOSING.contains(&s) {
+    if is_closing(s) {
         chars.put_back(s);
-        return Ok(true)  // emptu chunk, next char is closing
+        return Ok(true); // emptu chunk, next char is closing
     }
-    let expected_end = *PAIRS.get(&s).unwrap();
+    let expected_end = get_closing(*s);
     stack.push(expected_end);
     read_chunks(chars, stack)?;
 
     let e = match chars.next() {
         Some(c) => c,
-        None => return Err(ChunkError::Incomplete(stack.iter().cloned().rev().collect())),
+        None => {
+            return Err(ChunkError::Incomplete(
+                stack.iter().cloned().rev().collect(),
+            ))
+        }
     };
 
-    if e != *PAIRS.get(&s).unwrap() {
-        return Err(ChunkError::Corrupted(e))
+    if *e != get_closing(*s) {
+        return Err(ChunkError::Corrupted(*e));
     };
     stack.pop();
     return Ok(false);
 }
 
 fn main() {
-    let parsed = parse(include_str!("input.txt"));
-    println!("parsed: {:?}", parsed);
     let mut sum = 0;
-    let mut sums: Vec<i64> = vec![];
-    for line in parsed {
-        print!("{:?} - ", line);
-        let mut iter = put_back(line.chars());
+    let mut sums: Vec<i64> = Vec::new();
+    for line in utils::iter_lines!("input.txt") {
+        let mut iter = put_back(line.iter());
         match read_chunks(&mut iter, &mut Vec::new()) {
-            Ok(_) => println!("ok"),
+            Ok(_) => {
+                println!("ok");
+            }
             Err(ChunkError::Incomplete(stack)) => {
-                println!("incomplete: {:?}", stack.iter().collect::<String>());
                 let mut sum = 0;
                 for c in stack.iter() {
-                    sum = sum * 5 + match *c {
-                        ')' => 1,
-                        ']' => 2,
-                        '}' => 3,
-                        '>' => 4,
-                        _ => panic!("invalid data")
-                    }
+                    sum = sum * 5
+                        + match *c {
+                            b')' => 1,
+                            b']' => 2,
+                            b'}' => 3,
+                            b'>' => 4,
+                            _ => panic!("invalid data"),
+                        }
                 }
                 sums.push(sum);
             }
             Err(ChunkError::Corrupted(e)) => {
                 sum += match e {
-                    ')' => 3,
-                    ']' => 57,
-                    '}' => 1197,
-                    '>' => 25137,
+                    b')' => 3,
+                    b']' => 57,
+                    b'}' => 1197,
+                    b'>' => 25137,
                     _ => panic!("invalid data"),
                 };
-                println!("corrupted {}", e)
-            },
+            }
         }
     }
     println!("part1: {}", sum);
