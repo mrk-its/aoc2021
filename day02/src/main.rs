@@ -7,11 +7,11 @@ use ufmt_stdio::*;
 fn main() {
     let mut pos = 0;
     let mut depth = 0;
-    println!("start!\n");
-    let parsed = include_str!("input.txt").split('\n').map(|line| {
-        let mut p = line.split(' ');
+
+    let parsed = utils::iter_lines!("input.txt").map(|line| {
+        let mut p = line.split(|f| *f == 32);
         let dir = p.next().unwrap();
-        let n = p.next().unwrap();
+        let n = utils::to_str(p.next().unwrap());
         (dir, n.parse::<u8>().unwrap())
     });
 
@@ -21,9 +21,9 @@ fn main() {
     for (dir, n) in parsed.clone() {
         let n = n as i32;
         match dir {
-            "forward" => pos += n,
-            "down" => depth += n,
-            "up" => depth -= n,
+            b"forward" => pos += n,
+            b"down" => depth += n,
+            b"up" => depth -= n,
             _ => panic!(),
         }
     }
@@ -37,12 +37,12 @@ fn main() {
     for (dir, n) in parsed.clone() {
         let n = n as u32;
         match dir {
-            "forward" => {
+            b"forward" => {
                 pos += n;
                 depth += aim * n;
             }
-            "down" => aim += n,
-            "up" => aim -= n,
+            b"down" => aim += n,
+            b"up" => aim -= n,
             _ => panic!(),
         }
     }
