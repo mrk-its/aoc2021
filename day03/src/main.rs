@@ -8,7 +8,6 @@ use ufmt_stdio::*;
 use arrayvec::ArrayVec;
 
 const BITS: usize = 12;
-const INPUT: &str = include_str!("input.txt");
 
 type Input = ArrayVec<u16, 1000>;
 
@@ -33,9 +32,8 @@ fn most_common(lines: &Input) -> u16 {
 }
 
 fn main() {
-    let lines: Input = INPUT
-        .split('\n')
-        .map(|line| u16::from_str_radix(line, 2).unwrap())
+    let lines: Input = utils::iter_lines!("input.txt")
+        .map(|line| u16::from_str_radix(utils::to_str(line), 2).unwrap())
         .collect();
 
     const MASK: u16 = (1 << BITS) - 1;
