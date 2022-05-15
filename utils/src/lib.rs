@@ -25,3 +25,16 @@ macro_rules! entry {
         }
     };
 }
+
+#[macro_export]
+macro_rules! iter_lines {
+    ($name:expr) => {
+        include_bytes!($name).split(|c| *c == b'\n')
+    }
+}
+
+pub fn to_str(data: &[u8]) -> &str {
+    unsafe {
+        core::str::from_utf8_unchecked(data)
+    }
+}
