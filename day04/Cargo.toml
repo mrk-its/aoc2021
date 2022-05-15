@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 utils = {path="../utils"}
 ufmt-stdio = "0"
+itermore = "0"

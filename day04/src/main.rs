@@ -2,6 +2,7 @@
 #![feature(start)]
 
 utils::entry!(main);
+use itermore::Itermore;
 use ufmt_stdio::*;
 
 #[derive(Copy, Clone)]
@@ -29,11 +30,11 @@ impl Default for Board {
     }
 }
 
-fn parse_row(row: &str, parsed: &mut [u8; 5]) {
+fn parse_row(row: &[u8], parsed: &mut [u8; 5]) {
     for (i, v) in row
-        .split(' ')
+        .split(|c| *c == b' ')
         .filter(|v| !v.is_empty())
-        .map(|v| v.parse().unwrap())
+        .map(|v| utils::to_str(v).parse().unwrap())
         .enumerate()
     {
         parsed[i] = v;
@@ -47,10 +48,10 @@ fn is_bit_set(bits: &[u8], index: usize) -> bool {
 }
 
 impl Board {
-    fn init(&mut self, data: &str) {
-        for (i, row) in data.split('\n').enumerate() {
+    fn init(&mut self, data: &[&[u8]]) {
+        for (i, row) in data.iter().enumerate() {
             // it fails in release mode when changed to "\n"
-            parse_row(row, &mut self.rows[i]);
+            parse_row(*row, &mut self.rows[i]);
         }
 
         for (j, row) in self.rows.iter().enumerate() {
@@ -93,27 +94,27 @@ const NUMBER_COUNT: usize = 100;
 fn main() {
     // part1: 29440
     // part2: 13884
-    let data = include_str!("input.txt");
+    let mut data = utils::iter_lines!("input.txt");
     print!("parsing header...");
-    let mut data = data.split("\n\n");
     let header = data.next().unwrap();
 
     let mut numbers: [u8; NUMBER_COUNT] = [0; NUMBER_COUNT];
     let mut boards: [Board; BOARD_COUNT] = [Board::default(); BOARD_COUNT];
 
     for (i, v) in header
-        .split(',')
-        .map(|v| v.parse::<u8>().unwrap())
+        .split(|c| *c == b',')
+        .map(|v| utils::to_str(v).parse::<u8>().unwrap())
         .enumerate()
     {
         numbers[i] = v;
     }
     print!("done\nparsing boards...");
 
-    for (i, board_data) in data.enumerate() {
+    for (i, data) in data.array_chunks::<6>().enumerate() {
         print!(".");
-        boards[i].init(board_data);
+        boards[i].init(&data[1..]);
     }
+
     print!("done\nplaying...");
     let mut first_score = None;
     let mut last_score = 0;
