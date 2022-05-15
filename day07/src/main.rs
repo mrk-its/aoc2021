@@ -7,9 +7,9 @@ use arrayvec::ArrayVec;
 
 type Number = i32;
 
-fn parse(data: &str) -> ArrayVec<i32, 2000> {
-    data.split(',')
-        .map(|v| v.parse::<i32>().unwrap())
+fn parse(data: &[u8]) -> ArrayVec<i32, 2000> {
+    data.split(|c| *c == b',')
+        .map(|v| utils::to_str(v).parse::<i32>().unwrap())
         .collect::<ArrayVec<_, 2000>>()
 }
 
@@ -39,7 +39,7 @@ fn find_min(data: &[i32], cost: CostFn) -> Number {
 }
 
 fn main() {
-    let data = parse(include_str!("input.txt"));
+    let data = parse(include_bytes!("input.txt"));
 
     let min = find_min(&data, cost1);
     println!("part1: {}", min);
