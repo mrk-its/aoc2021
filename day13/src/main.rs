@@ -20,7 +20,11 @@ enum Fold {
 #[derive(Copy, Clone, PartialEq, Eq, uDebug)]
 struct Point(i16, i16);
 
-impl utils::SimpleHash for Point {}
+impl utils::SimpleHash for Point {
+    fn hash(&self) -> usize {
+        ((self.0 << 3) ^ self.1) as usize
+    }
+}
 
 type Paper = utils::SimpleSet<1000, Point>;
 
