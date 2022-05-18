@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools = "0"
-regex = "1.5"
-lazy_static = "1.4"
+itertools = {version = "0", default-features = false}
+safe-regex = "0"
+utils = {path="../utils"}
+mos-alloc = "0.2.0"
+ufmt-stdio = "0"

@@ -1,129 +1,122 @@
-use lazy_static::lazy_static;
-use regex::Regex;
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
+
+utils::entry!(main);
+extern crate alloc;
+extern crate mos_alloc;
+
+use alloc::vec::Vec;
+use safe_regex::regex;
+use ufmt::derive::uDebug;
+use ufmt_stdio::*;
 
 #[derive(Debug, Clone, Copy)]
 enum Fold {
-    X(usize),
-    Y(usize),
+    X(i16),
+    Y(i16),
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, uDebug)]
+struct Point(i16, i16);
+
+impl utils::SimpleHash for Point {}
+
+type Paper = utils::SimpleSet<1000, Point>;
+
 struct Origami {
-    paper: Vec<Vec<u8>>,
+    paper: Paper,
     folds: Vec<Fold>,
 }
 
-impl Origami {
-    fn show(&self) {
-        for line in &self.paper {
-            println!("{}", String::from_iter(line.iter().map(|v| if *v == 0 {' '} else {'█'})));
-        }
-        println!("folds: {:?}", self.folds);
-        println!();
-    }
-    fn fold_x(&mut self, value: usize) {
-        let h = self.paper.len();
-        let w = self.paper[0].len();
-        for y in 0..h {
-            for i in value + 1..w {
-                self.paper[y][value - (i - value)] |= self.paper[y][i];
-            }
-            self.paper[y].truncate(value);
-        }
-
-    }
-    fn fold_y(&mut self, value: usize) {
-        let h = self.paper.len();
-        let w = self.paper[0].len();
-        for y in value + 1..h {
-            for i in 0..w {
-                self.paper[value - (y - value)][i] |= self.paper[y][i];
-            }
-        }
-        self.paper.truncate(value);
-    }
-    fn fold(&mut self, fold: Fold) {
-        match fold {
-            Fold::X(value) => self.fold_x(value),
-            Fold::Y(value) => self.fold_y(value),
-        }
-    }
-    fn count_dots(&self) -> i32 {
-        let mut cnt = 0;
-        for row in &self.paper {
-            for c in row {
-                if *c > 0 {
-                    cnt += 1;
+fn do_fold(paper: &Paper, fold: &Fold) -> Paper {
+    let mut dest = Paper::new();
+    for point in paper.iter() {
+        let p = match fold {
+            Fold::X(k) => {
+                if point.0 > *k {
+                    Point(*k - (point.0 - *k), point.1)
+                } else {
+                    *point
                 }
             }
+            Fold::Y(k) => {
+                if point.1 > *k {
+                    Point(point.0, *k - (point.1 - *k))
+                } else {
+                    *point
+                }
+            }
+        };
+        dest.insert(p);
+    }
+    dest
+}
+
+fn show(paper: &Paper) {
+    let (size_x, size_y) = paper
+        .iter()
+        .fold((0, 0), |a, b| (a.0.max(b.0), a.1.max(b.1)));
+    for y in 0..=size_y {
+        for x in 0..=size_x {
+            let c = if paper.contains(&Point(x, y)) {
+                "#"
+            } else {
+                " "
+            };
+            print!("{}", c);
         }
-        cnt
+        println!();
     }
 }
 
-lazy_static! {
-    static ref COORDS_RE: Regex = Regex::new(r"^(\d+),(\d+)").unwrap();
-    static ref FOLD_RE: Regex = Regex::new(r"^fold along (.)=(\d+)").unwrap();
-}
+fn parse<'a>(lines: impl Iterator<Item = &'a [u8]>) -> Origami {
+    #[allow(non_snake_case)]
+    let COORDS_RE = regex!(br"([0-9]+),([0-9]+)");
+    #[allow(non_snake_case)]
+    let FOLD_RE = regex!(br"fold along (.)=([0-9]+)");
 
-fn parse(input: &str) -> Origami {
-    let mut paper = Vec::new();
     let mut folds = Vec::new();
-    let lines = input.split('\n');
 
-    let mut coords = Vec::new();
-
+    let mut paper: utils::SimpleSet<1000, Point> = utils::SimpleSet::new();
 
     for line in lines {
-        println!("{}", line);
-        if let Some(cap) = COORDS_RE.captures(line) {
-            let vec = cap
-                .iter()
-                .skip(1)
-                .map(|m| m.unwrap().as_str().parse::<usize>().unwrap())
-                .collect::<Vec<_>>();
-            coords.push(vec);
-        } else if let Some(cap) = FOLD_RE.captures(line) {
-            let dir = cap.get(1).unwrap().as_str();
-            let value = cap.get(2).unwrap().as_str().parse().unwrap();
+        // println!("line: {:?}", line);
+        if let Some((x, y)) = COORDS_RE.match_slices(line) {
+            // println!("coords: {:?} {:?}", x, y);
+            let x = utils::to_str(x).parse().unwrap();
+            let y = utils::to_str(y).parse().unwrap();
+            paper.insert(Point(x, y));
+        } else if let Some((dir, value)) = FOLD_RE.match_slices(line) {
+            // println!("dir: {:?} value: {:?}", dir, value);
+            let value = utils::to_str(value).parse().unwrap();
             folds.push(match dir {
-                "x" => Fold::X(value),
-                "y" => Fold::Y(value),
+                b"x" => Fold::X(value),
+                b"y" => Fold::Y(value),
                 _ => panic!(),
             });
         }
-    }
-
-    let max_x = coords.iter().map(|c| c[0]).max().unwrap() + 1;
-    let max_y = coords.iter().map(|c| c[1]).max().unwrap() + 1;
-
-    paper.resize_with(max_y, || {
-        let mut vec = Vec::with_capacity(max_x);
-        vec.resize(max_x, 0);
-        vec
-    });
-
-    for coord in coords {
-        paper[coord[1]][coord[0]] = 1;
     }
 
     Origami { paper, folds }
 }
 
 fn main() {
-    let mut origami = parse(include_str!("input.txt"));
-    origami.show();
+    let origami = parse(utils::iter_lines!("input.txt"));
+    println!("parsed");
 
     let mut part1 = 0;
 
-    for (n, fold) in origami.folds.clone().iter().enumerate() {
-        origami.fold(*fold);
-        origami.show();
+    let mut paper = origami.paper;
+    for (n, fold) in origami.folds.iter().enumerate() {
+        paper = do_fold(&mut paper, fold);
         if n == 0 {
-            part1 = origami.count_dots();
+            part1 = paper.iter().count();
         }
     }
     println!("part1: {}", part1);
+    println!("part2: {}", paper.iter().count());
+    show(&paper);
 }
 
 #[cfg(test)]
