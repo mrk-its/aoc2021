@@ -1,94 +1,116 @@
-use itertools::Itertools;
-use std::{collections::{HashSet, HashMap}, time::Duration};
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
+// #![feature(nll)]
 
-type Graph<'a> = HashMap<&'a str, Vec<&'a str>>;
+utils::entry!(main);
+extern crate alloc;
+extern crate mos_alloc;
 
+use alloc::vec::Vec;
+use ufmt_stdio::*;
+use utils::SimpleMap;
 
-fn parse_graph<'a>(input: &'a str) -> Graph<'a> {
-    let mut graph: Graph = HashMap::new();
-    let lines = input
-        .split('\n');
+type Graph<'a> = SimpleMap<100, &'a [u8], Vec<&'a [u8]>>;
+
+fn parse_graph<'a>(lines: impl Iterator<Item = &'a [u8]>) -> Graph<'a> {
+    let mut graph = Graph::new();
 
     for line in lines {
-        let mut x = line.split('-');
+        let mut x = line.split(|f| *f == b'-');
         let node_a = x.next().unwrap();
         let node_b = x.next().unwrap();
+
         graph.entry(node_a).or_default().push(node_b);
         graph.entry(node_b).or_default().push(node_a);
     }
 
     graph
-
 }
 
-fn is_uppercase(text: &str) -> bool {
-    text.chars().all(|c| c.is_uppercase())
+fn is_uppercase(text: &[u8]) -> bool {
+    text.iter().all(|c| *c & 0x20 == 0)
 }
 
-fn checker1(node: &str, visited: &Vec<&str>) -> bool {
+fn checker1(node: &[u8], visited: &Vec<&[u8]>) -> bool {
     if is_uppercase(node) {
         return true;
     }
-    let mut counts: HashMap<&str, i32> = HashMap::new();
+    let mut counts: SimpleMap<30, &[u8], i32> = SimpleMap::new();
     for n in visited {
         if is_uppercase(n) {
             continue;
         }
-        let x = counts.entry(n).or_default();
-        *x += 1;
+        let v = match counts.get(n) {
+            Some(v) => *v + 1,
+            None => 1,
+        };
+        counts.insert(n, v);
     }
-    let cnts = counts.values().collect::<Vec<_>>();
-    return !cnts.contains(&&2)
+    let mut vals = counts.values();
+    !vals.any(|v| *v == 2)
 }
 
-fn checker2(node: &str, visited: &Vec<&str>) -> bool {
+fn checker2(node: &[u8], visited: &Vec<&[u8]>) -> bool {
     if is_uppercase(node) {
         return true;
     }
-    let mut counts: HashMap<&str, i32> = HashMap::new();
+    let mut counts: SimpleMap<30, &[u8], i32> = SimpleMap::new();
     for n in visited {
         if is_uppercase(n) {
             continue;
         }
-        let x = counts.entry(n).or_default();
-        *x += 1;
+        let v = match counts.get(n) {
+            Some(v) => *v + 1,
+            None => 1,
+        };
+        counts.insert(n, v);
     }
-    let cnts = counts.values().cloned().collect::<Vec<_>>();
-
-    cnts.iter().all(|c| *c < 2) || cnts.iter().cloned().filter(|&c| c==2).count() == 1
+    let mut cnts = counts.values();
+    if cnts.all(|c| *c < 2) {
+        return true;
+    }
+    let cnts = counts.values();
+    cnts.filter(|&c| *c == 2).count() == 1
 }
 
-fn visit_dfs<'a>(graph: &'a Graph, start: &'a str, mut visited: Vec<&'a str>, paths: &mut Vec<Vec<&'a str>>, valid: fn(node: &str, visited: &Vec<&str>) -> bool) {
-    if start == "end" {
-        paths.push(visited.clone());
+fn visit_dfs<'a>(
+    graph: &'a Graph,
+    start: &'a [u8],
+    mut visited: Vec<&'a [u8]>,
+    n_paths: &mut u32,
+    valid: fn(node: &[u8], visited: &Vec<&[u8]>) -> bool,
+    depth: usize,
+) {
+    if start == b"end" {
+        *n_paths += 1;
+        // if *n_paths & 0xff == 0 {
+        //     println!("n_paths: {}, free: {}", *n_paths, mos_alloc::bytes_free());
+        // }
         return;
     }
     visited.push(start);
     if !valid(start, &visited) {
-        return
+        return;
     }
-    let nodes = graph.get(start).unwrap();
+    let nodes = graph.get(&start).unwrap();
     for &dest in nodes {
-        if dest == "start" {
+        if dest == b"start" {
             continue;
         }
-        visit_dfs(graph, dest, visited.clone(), paths, valid);
+        visit_dfs(graph, dest, visited.clone(), n_paths, valid, depth + 1);
     }
 }
 
-
 fn main() {
-    let graph = parse_graph(include_str!("input.txt"));
-    println!("graph: {:?}", graph);
-    let mut paths = Vec::new();
-    visit_dfs(&graph, "start", Vec::new(), &mut paths, checker1);
-    println!("part1: {}", paths.len());
-
-    let mut paths = Vec::new();
-    visit_dfs(&graph, "start", Vec::new(), &mut paths, checker2);
-    println!("part2: {}", paths.len());
-
-
+    let graph = parse_graph(utils::iter_lines!("input.txt"));
+    println!("parsed!");
+    let mut n_paths = 0;
+    visit_dfs(&graph, b"start", Vec::new(), &mut n_paths, checker1, 0);
+    println!("part1: {}", n_paths);
+    let mut n_paths = 0;
+    visit_dfs(&graph, b"start", Vec::new(), &mut n_paths, checker2, 0);
+    println!("part2: {}", n_paths);
 }
 
 #[cfg(test)]
@@ -96,6 +118,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
-    }
+    fn test() {}
 }
