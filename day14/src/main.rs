@@ -10,7 +10,6 @@ use alloc::vec::Vec;
 use safe_regex::regex;
 use ufmt_stdio::*;
 
-
 #[derive(Eq, PartialEq, Clone, Copy)]
 struct Pair(u8, u8);
 
@@ -21,7 +20,7 @@ impl utils::SimpleHash for Pair {
 }
 
 type Defs = utils::SimpleMap<200, Pair, u8>;
-type Template<'a> = &'a[u8];
+type Template<'a> = &'a [u8];
 
 type PairCounts = utils::SimpleMap<200, Pair, i64>;
 
@@ -62,13 +61,15 @@ fn score(template: &Template, input: &PairCounts) -> i64 {
     stats.insert(*template.first().unwrap(), 1);
     stats.insert(*template.last().unwrap(), 1);
 
-
     for (pair, cnt) in input.iter() {
         *stats.entry(pair.0).or_default() += cnt;
         *stats.entry(pair.1).or_default() += cnt;
     }
 
-    let mut stats = stats.iter().map(|(c, &cnt)| (c, cnt / 2)).collect::<Vec<_>>();
+    let mut stats = stats
+        .iter()
+        .map(|(c, &cnt)| (c, cnt / 2))
+        .collect::<Vec<_>>();
     stats.sort_by_key(|f| -f.1);
     stats.first().unwrap().1 - stats.last().unwrap().1
 }
@@ -77,7 +78,9 @@ fn main() {
     let (template, defs) = parse(utils::iter_lines!("input.txt"));
     let mut pair_counts = PairCounts::new();
     for i in 0..template.len() - 1 {
-        *pair_counts.entry(Pair(template[i], template[i+1])).or_default() += 1
+        *pair_counts
+            .entry(Pair(template[i], template[i + 1]))
+            .or_default() += 1
     }
     let mut input = pair_counts;
 
