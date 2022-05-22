@@ -214,6 +214,13 @@ where
             .filter(|k| k.is_some())
             .map(|k| &k.as_ref().unwrap().0)
     }
+    pub fn iter(&self) -> impl Iterator<Item = (&K, &V)> {
+        self.data
+            .iter()
+            .filter(|k| k.is_some())
+            .map(|k| k.as_ref().unwrap())
+            .map(|k| (&k.0, &k.1))
+    }
 }
 pub struct SimpleSet<const N: usize, K>(SimpleMap<N, K, ()>)
 where
