@@ -1,3 +1,15 @@
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
+
+utils::entry!(main);
+extern crate alloc;
+extern crate mos_alloc;
+
+use alloc::vec;
+use alloc::vec::Vec;
+use ufmt_stdio::*;
+
 struct BITS {
     data: Vec<u8>,
     bit_pos: usize,
@@ -17,26 +29,24 @@ impl Packet {
     fn value(&self) -> u64 {
         match &self.kind {
             Kind::Literal(value) => *value,
-            Kind::Operator {kind, packets} => {
-                match kind {
-                    0 => packets.iter().fold(0, |a, p| a + p.value()),
-                    1 => packets.iter().fold(1, |a, p| a * p.value()),
-                    2 => packets.iter().map(|p| p.value()).min().unwrap(),
-                    3 => packets.iter().map(|p| p.value()).max().unwrap(),
-                    5 => (packets[0].value() > packets[1].value()) as u64,
-                    6 => (packets[0].value() < packets[1].value()) as u64,
-                    7 => (packets[0].value() == packets[1].value()) as u64,
-                    _ => panic!(),
-                }
-            }
+            Kind::Operator { kind, packets } => match kind {
+                0 => packets.iter().fold(0, |a, p| a + p.value()),
+                1 => packets.iter().fold(1, |a, p| a * p.value()),
+                2 => packets.iter().map(|p| p.value()).min().unwrap(),
+                3 => packets.iter().map(|p| p.value()).max().unwrap(),
+                5 => (packets[0].value() > packets[1].value()) as u64,
+                6 => (packets[0].value() < packets[1].value()) as u64,
+                7 => (packets[0].value() == packets[1].value()) as u64,
+                _ => panic!(),
+            },
         }
     }
 }
 
 impl BITS {
-    fn from_str(data: &str) -> Self {
+    fn from_bytes(data: &[u8]) -> Self {
         let data = data
-            .bytes()
+            .iter()
             .map(|b| match b {
                 48..=57 => b - 48,
                 65..=70 => b - 65 + 10,
@@ -86,7 +96,6 @@ impl BITS {
                     for _ in 0..n_packets {
                         packets.push(self.next_packet())
                     }
-
                 }
                 Kind::Operator { kind, packets }
             }
@@ -100,7 +109,7 @@ impl BITS {
 
 fn sum_versions(packet: &Packet) -> u64 {
     let mut version = packet.version as u64;
-    if let Kind::Operator {packets, ..} = &packet.kind {
+    if let Kind::Operator { packets, .. } = &packet.kind {
         for packet in packets {
             version += sum_versions(packet)
         }
@@ -109,11 +118,11 @@ fn sum_versions(packet: &Packet) -> u64 {
 }
 
 fn main() {
-    let mut bits = BITS::from_str(include_str!("input.txt"));
+    mos_alloc::set_limit(16000);
+    let mut bits = BITS::from_bytes(include_bytes!("input.txt"));
     let packet = bits.next_packet();
     println!("part1: {}", sum_versions(&packet));
     println!("part2: {}", packet.value());
-
 }
 
 #[test]
@@ -139,21 +148,34 @@ fn test_packet_literal() {
     )
 }
 
-
 #[test]
 fn test_packet_operator() {
     let mut bits = BITS::from_str("38006F45291200");
     let packet = bits.next_packet();
     match packet {
-        Packet {kind: Kind::Operator {packets, ..}, ..} => {
+        Packet {
+            kind: Kind::Operator { packets, .. },
+            ..
+        } => {
             assert_eq!(packets.len(), 2);
-            assert_eq!(packets[0], Packet{ version: 6, kind: Kind::Literal(10)});
-            assert_eq!(packets[1], Packet{ version: 2, kind: Kind::Literal(20)});
+            assert_eq!(
+                packets[0],
+                Packet {
+                    version: 6,
+                    kind: Kind::Literal(10)
+                }
+            );
+            assert_eq!(
+                packets[1],
+                Packet {
+                    version: 2,
+                    kind: Kind::Literal(20)
+                }
+            );
         }
-        _ => panic!()
+        _ => panic!(),
     }
 }
-
 
 #[test]
 fn test_sum_versions_1() {
