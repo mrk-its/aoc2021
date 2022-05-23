@@ -23,9 +23,6 @@ impl SNum {
         let mut_ref: &mut SNum = unsafe { core::mem::transmute(self as *const SNum) };
         *mut_ref = v;
     }
-    fn pair(a: SNum, b: SNum) -> SNum {
-        SNum::Pair(Box::new((a, b)))
-    }
     fn add(&self, other: &SNum) -> SNum {
         SNum::Pair(Box::new((self.clone(), other.clone()))).reduce()
     }
@@ -67,7 +64,7 @@ impl SNum {
         right: &mut Option<&'a SNum>,
     ) {
         match self {
-            SNum::Regular(x) => {
+            SNum::Regular(_) => {
                 if exploded.is_none() {
                     *left = Some(self)
                 } else if right.is_none() {
