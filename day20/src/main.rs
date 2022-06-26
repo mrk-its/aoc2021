@@ -1,3 +1,5 @@
+// 6502: change board representation from HashMap to bitmap
+
 use std::collections::HashMap;
 
 type Pixel = u16;
