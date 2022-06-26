@@ -1,3 +1,5 @@
+// 6502: too big, game_tree uses cache with size sizeof(u64) * 10000
+
 use std::collections::HashMap;
 
 struct DeterministicDice {
@@ -47,9 +49,15 @@ fn game_tree(
     positions: [usize; 2],
     scores: [usize; 2],
     max_score: usize,
-    cnt: u128,
-    cache: &mut HashMap<(usize, [usize; 2], [usize; 2]), u128>,
-) -> u128 {
+    cnt: u64,
+    cache: &mut HashMap<(usize, [usize; 2], [usize; 2]), u64>,
+    level: u32,
+    max_level: &mut u32,
+) -> u64 {
+    if level > *max_level {
+        *max_level = level;
+        println!("max_level: {:?}, cache: {:?}", max_level, cache.len());
+    }
     let key = &(player, positions, scores);
     if cache.contains_key(key) {
         return *cache.get(key).unwrap();
@@ -74,6 +82,8 @@ fn game_tree(
                         max_score,
                         cnt,
                         cache,
+                        level + 1,
+                        max_level,
                     );
                 } else {
                     if player == 0 {
@@ -95,6 +105,8 @@ fn main() {
     let (winner1, cnt) = game(&mut dice1, [5, 3], &mut scores1, 1000);
     println!("part1: {}", scores1[(winner1 + 1) & 1] * cnt);
 
+    let mut max_level = 0;
+
     let cnt = game_tree(
         0,
         Vec::new(),
@@ -103,6 +115,8 @@ fn main() {
         21,
         0,
         &mut HashMap::new(),
+        0,
+        &mut max_level,
     );
     println!("cnt: {}", cnt);
 }
