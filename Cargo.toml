@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "day01", "day02", "day03", "day04", "day05", "day06", "day07", "day08",
+    "day01", "day02", "day03", "day04", "day06", "day07", "day08",
     "day09", "day10", "day11", "day12", "day13", "day14", "day16", 
-    "day17", "day18", "day25", "utils",
+    "day17", "day18", "day24", "utils",
 ]
 
 [profile.dev]
@@ -22,4 +22,4 @@ panic = "abort"
 ufmt = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
 ufmt-write = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
 
-a800xl-utils = {path = "../a800xl-utils"}
+# a800xl-utils = {path = "../a800xl-utils"}
