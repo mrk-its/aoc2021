@@ -1,3 +1,4 @@
+// 6502: too big, part2 needs to store 12k Cubes, so 12k * 2 * 3 * 4 = 12k * 24 = 288kB
 #[allow(unused_imports)]
 use itertools::{Itertools};
 
