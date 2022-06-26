@@ -1,12 +1,20 @@
-use rand::Rng;
+#![no_std]
+#![feature(start)]
+#![feature(default_alloc_error_handler)]
 
-#[derive(Debug)]
+utils::entry!(main);
+extern crate alloc;
+extern crate mos_alloc;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
+
+use ufmt_stdio::*;
+
 enum Op {
     Reg(usize),
-    Imm(i64)
+    Imm(i32)
 }
 
-#[derive(Debug)]
 enum Instr {
     Inp(Op),
     Add(Op, Op),
@@ -16,32 +24,32 @@ enum Instr {
     Eql(Op, Op),
 }
 
-fn parse_op(input: &str) -> Op {
+fn parse_op(input: &[u8]) -> Op {
     match input {
-        "w" => Op::Reg(0),
-        "x" => Op::Reg(1),
-        "y" => Op::Reg(2),
-        "z" => Op::Reg(3),
-        _ => Op::Imm(input.parse::<i64>().unwrap())
+        b"w" => Op::Reg(0),
+        b"x" => Op::Reg(1),
+        b"y" => Op::Reg(2),
+        b"z" => Op::Reg(3),
+        _ => Op::Imm(utils::to_str(input).parse::<i32>().unwrap())
     }
 }
 
-fn parse_program(input: &str) -> Vec<Instr> {
-    input.split('\n').map(|line| {
-        let v = line.split(' ').collect::<Vec<_>>();
+fn parse_program<'a>(lines: impl Iterator<Item=&'a [u8]>) -> Vec<Instr> {
+    lines.map(|line| {
+        let v = line.split(|c| *c == b' ').collect::<Vec<_>>();
         match v[0] {
-            "inp" => Instr::Inp(parse_op(v[1])),
-            "add" => Instr::Add(parse_op(v[1]), parse_op(v[2])),
-            "mul" => Instr::Mul(parse_op(v[1]), parse_op(v[2])),
-            "div" => Instr::Div(parse_op(v[1]), parse_op(v[2])),
-            "eql" => Instr::Eql(parse_op(v[1]), parse_op(v[2])),
-            "mod" => Instr::Mod(parse_op(v[1]), parse_op(v[2])),
+            b"inp" => Instr::Inp(parse_op(v[1])),
+            b"add" => Instr::Add(parse_op(v[1]), parse_op(v[2])),
+            b"mul" => Instr::Mul(parse_op(v[1]), parse_op(v[2])),
+            b"div" => Instr::Div(parse_op(v[1]), parse_op(v[2])),
+            b"eql" => Instr::Eql(parse_op(v[1]), parse_op(v[2])),
+            b"mod" => Instr::Mod(parse_op(v[1]), parse_op(v[2])),
             _ => panic!(),
         }
     }).collect()
 }
 
-fn run_program(program: &[Instr], regs: &mut [i64; 4], input: &[i64]) {
+fn run_program(program: &[Instr], regs: &mut [i32; 4], input: &[i32]) {
     let mut input_index = 0;
     for instr in program {
         match instr {
@@ -64,7 +72,7 @@ fn run_program(program: &[Instr], regs: &mut [i64; 4], input: &[i64]) {
 
 
 
-fn f(regs: &mut [i64; 4], input: i64, p1: i64, p2: i64, p3: i64) {
+fn f(regs: &mut [i32; 4], input: i32, p1: i32, p2: i32, p3: i32) {
     let x = (regs[3] % 26) + p2;        // 12
     regs[3] = regs[3] / p1;                 // 0
     regs[1] = if x == input {0} else {1};   // 1
@@ -74,24 +82,24 @@ fn f(regs: &mut [i64; 4], input: i64, p1: i64, p2: i64, p3: i64) {
     regs[3] += regs[2];                     // input + 6
 }
 
-fn run_program2(regs: &mut [i64; 4], input: &[i64]) {
-    f(regs, input[0], 1, 12, 6);
-    f(regs, input[1], 1, 11, 12);
-    f(regs, input[2], 1, 10, 5);
-    f(regs, input[3], 1, 10, 10);
-    f(regs, input[4], 26, -16, 7);
-    f(regs, input[5], 1, 14, 0);
-    f(regs, input[6], 1, 12, 4);
-    f(regs, input[7], 26, -4, 12);
-    f(regs, input[8], 1, 15, 14);
-    f(regs, input[9], 26, -7, 13);
+fn run_program2(regs: &mut [i32; 4], input: &[i32]) {
+    // f(regs, input[0], 1, 12, 6);
+    // f(regs, input[1], 1, 11, 12);
+    // f(regs, input[2], 1, 10, 5);
+    // f(regs, input[3], 1, 10, 10);
+    // f(regs, input[4], 26, -16, 7);
+    // f(regs, input[5], 1, 14, 0);
+    // f(regs, input[6], 1, 12, 4);
+    // f(regs, input[7], 26, -4, 12);
+    // f(regs, input[8], 1, 15, 14);
+    // f(regs, input[9], 26, -7, 13);
     f(regs, input[10], 26, -8, 10);
     f(regs, input[11], 26, -4, 11);
     f(regs, input[12], 26, -15, 9);
     f(regs, input[13], 26, -8, 9);
 }
 
-fn dec(input: &mut [i64]) -> bool {
+fn dec(input: &mut [i32]) -> bool {
     for idx in (0..input.len()).rev() {
         input[idx] = input[idx] - 1;
         if input[idx] <= 0 {
@@ -106,7 +114,7 @@ fn dec(input: &mut [i64]) -> bool {
     return false;
 }
 
-fn inc(input: &mut [i64]) -> bool {
+fn inc(input: &mut [i32]) -> bool {
     for idx in (0..input.len()).rev() {
         input[idx] = input[idx] + 1;
         if input[idx] > 9 {
@@ -121,12 +129,12 @@ fn inc(input: &mut [i64]) -> bool {
     return false;
 }
 
-fn find_serials(input: [i64; 14], cb: fn(&mut [i64]) -> bool) -> Option<[i64; 14]> {
-    let monad = parse_program(include_str!("input.txt"));
+fn find_serials(input: [i32; 14], cb: fn(&mut [i32]) -> bool) -> Option<[i32; 14]> {
+    let monad = parse_program(utils::iter_lines!("input.txt"));
     let mut input = input;
 
     loop {
-        let mut regs: [i64; 4] = [0; 4];
+        let mut regs: [i32; 4] = [0; 4];
         run_program(&monad[0..18*5], &mut regs, &input);
         if regs[1] == 0 {
             println!("input: {:?}", input);
@@ -140,8 +148,9 @@ fn find_serials(input: [i64; 14], cb: fn(&mut [i64]) -> bool) -> Option<[i64; 14
                         if regs3[1] == 0 {
                             // println!("    input: {:?}, out: {:?}", input, regs);            
                             loop {                       
-                                let mut regs4: [i64; 4] = regs3;
-                                run_program(&monad[18*10..], &mut regs4, &input[10..]);
+                                let mut regs4: [i32; 4] = regs3;
+                                // run_program(&monad[18*10..], &mut regs4, &input[10..]);
+                                run_program2(&mut regs4, &input);
                                 // let mut regs4 = regs3;
                                 // run_program(&monad[18*10..], &mut regs4, &input[10..]);
                                 if regs4[3] == 0 {  
@@ -171,8 +180,8 @@ fn find_serials(input: [i64; 14], cb: fn(&mut [i64]) -> bool) -> Option<[i64; 14
 
 fn main() {
     let part1 = find_serials([9; 14], dec);
-    let part2 = find_serials([1; 14], inc);
     println!("part1: {:?}", part1);
+    let part2 = find_serials([1; 14], inc);
     println!("part2: {:?}", part2);
 }
 
@@ -180,7 +189,7 @@ fn main() {
 fn test_1() {
     let program = parse_program(include_str!("test_input1.txt"));
     for i in 0..16 {
-        let mut regs: [i64; 4] = [0; 4];
+        let mut regs: [i32; 4] = [0; 4];
         run_program(&program, &mut regs, &[i]);
         println!("{:?}", regs);    
     }
