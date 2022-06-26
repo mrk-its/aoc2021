@@ -1,5 +1,6 @@
-use std::collections::{BinaryHeap, HashMap};
+// 6502: too big data (we need to store distance for each coord, so 250000 ints in part2)
 
+use std::collections::{BinaryHeap, HashMap};
 type Board = Vec<Vec<i32>>;
 type Pos = (usize, usize);
 
@@ -48,7 +49,7 @@ fn enlarge(board: &Board) -> Board {
 
 const MAX_DIST: i32 = i32::MAX;
 
-fn route(board: &Board, pos: Pos, dest: Pos) -> i32 {
+fn route(board: &Board, pos: Pos, dest: Pos, max_distance: &mut usize) -> i32 {
     let h = board.len();
     let w = board[0].len();
     let mut queue: BinaryHeap<(i32, Pos)> = BinaryHeap::new();
@@ -69,6 +70,7 @@ fn route(board: &Board, pos: Pos, dest: Pos) -> i32 {
                 queue.push((-alt, v));
             }
         }
+        *max_distance = (*max_distance).max(distance.len());
     }
     0
 }
@@ -78,12 +80,15 @@ fn main() {
     let h = board.len();
     let w = board[0].len();
 
-    let dist = route(&board, (0, 0), (w - 1, h - 1));
-    println!("part1: {}", dist);
+    let mut max_distance = 0;
+
+    let dist = route(&board, (0, 0), (w - 1, h - 1), &mut max_distance);
+    println!("part1: {}, {}", dist, max_distance);
     let large = enlarge(&board);
 
-    let dist = route(&large, (0, 0), (w * 5 - 1, h * 5 - 1));
-    println!("part2: {:?}", dist);
+    let mut max_distance = 0;
+    let dist = route(&large, (0, 0), (w * 5 - 1, h * 5 - 1), &mut max_distance);
+    println!("part2: {:?}, {}", dist, max_distance);
 }
 
 #[test]
