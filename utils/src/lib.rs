@@ -1,6 +1,7 @@
 #![no_std]
 #![allow(incomplete_features)]
 #![feature(generic_const_exprs)]
+#![feature(core_intrinsics)]
 // #![feature(nll)]
 
 pub mod hash;
@@ -10,7 +11,7 @@ use ufmt_stdio::*;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     println!("PANIC!!!");
-    loop {}
+    core::intrinsics::abort();
 }
 
 #[macro_export]
