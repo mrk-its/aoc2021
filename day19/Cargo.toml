@@ -10,3 +10,5 @@ itertools = "0"
 regex = "1.5"
 glam = "0.20"
 lazy_static = "1.4"
+
+[workspace]

@@ -1,3 +1,5 @@
+// 6502: remove glam dependency
+
 use std::{collections::{HashSet, HashMap}};
 
 use glam::{f32::{Affine3A, Mat3A}, IVec3, Vec3};
