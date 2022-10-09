@@ -1,5 +1,6 @@
 [build]
 target = "mos-sim-none"
+# target = "x86_64-unknown-linux-gnu"
 
 [target.mos-sim-none]
 runner = ["mos-sim", "--cycles"]
