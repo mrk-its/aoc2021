@@ -1,0 +1,14 @@
+[build]
+target = "mos-sim-none"
+
+[target.mos-sim-none]
+runner = ["mos-sim", "--cycles"]
+
+[target.mos-a800xl-none]
+runner = ["/bin/echo", "can't run"]
+
+[target.mos-c64-none]
+runner = ["/bin/echo", "can't run"]
+
+[unstable]
+build-std = ["core", "alloc"]
