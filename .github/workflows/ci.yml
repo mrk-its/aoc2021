@@ -19,13 +19,13 @@ jobs:
       - run: env
 
       # cargo run 2>&1 | grep "available binaries: " | cut -b 21- | sed 's/, / /g' | xargs -n 1 | grep -v 'day09\|day10\|day12\|day16\|day24' | xargs -n 1 cargo run -p
-      - run: HOME=/home/mos cargo run -p day08 -vvv # wtf: undefined reference to `__set_heap_limit'
       - run: cargo run -p day01
       - run: cargo run -p day02
       - run: cargo run -p day03
       - run: cargo run -p day04
       - run: cargo run -p day06
       - run: cargo run -p day07  # slow
+      - run: cargo run -p day08
       # - run: cargo run -p day09  # panic in part2
       # - run: cargo run -p day10  #  error: undefined symbol: __multi3
       - run: cargo run -p day11
@@ -34,5 +34,5 @@ jobs:
       - run: cargo run -p day14
       # - run: cargo run -p day16  #  error: undefined symbol: __multi3
       - run: cargo run -p day17
-      # - run: cargo run -p day18   # wtf: undefined reference to `__set_heap_limit'
+      - run: cargo run -p day18   # wtf: undefined reference to `__set_heap_limit'
       # - run: cargo run -p day24  # sloooow
