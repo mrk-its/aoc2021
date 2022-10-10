@@ -31,7 +31,7 @@ fn main() {
     println!("part1: {}", part1);
 
     // WTF: regular assert here hangs execution in release mode!
-    debug_assert!(part1 == 2019945);
+    assert!(part1 == 2019945);
 
     let mut pos = 0;
     let mut depth = 0;
