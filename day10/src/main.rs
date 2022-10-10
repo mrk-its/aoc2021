@@ -107,8 +107,11 @@ fn main() {
         }
     }
     println!("part1: {}", sum);
+    assert!(sum == 469755);
     sums.sort();
-    println!("part2: {}", sums[sums.len() / 2]);
+    let part2 = sums[sums.len() / 2];
+    println!("part2: {}", part2);
+    assert!(part2 == 2762335572);
 }
 
 #[cfg(test)]

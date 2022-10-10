@@ -86,9 +86,13 @@ fn main() {
 
     for i in 0..40 {
         if i == 10 {
-            println!("part1: {:?}", score(&template, &input));
+            let part1 = score(&template, &input);
+            println!("part1: {:?}", part1);
+            assert!(part1 == 3411);
         }
         input = inject(&input, &defs);
     }
-    println!("part2: {:?}", score(&template, &input));
+    let part2 = score(&template, &input);
+    println!("part2: {:?}", part2);
+    assert!(part2 == 7477815755570);
 }

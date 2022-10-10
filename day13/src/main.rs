@@ -119,8 +119,11 @@ fn main() {
         }
     }
     println!("part1: {}", part1);
-    println!("part2: {}", paper.iter().count());
+    assert!(part1 == 669);
+    let part2 = paper.iter().count();
+    println!("part2: {}", part2);
     show(&paper);
+    assert!(part2 == 90);
 }
 
 #[cfg(test)]

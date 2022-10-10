@@ -27,8 +27,11 @@ fn main() {
             _ => panic!(),
         }
     }
+    let part1 = pos * depth;
+    println!("part1: {}", part1);
 
-    println!("part1: {}", pos * depth);
+    // WTF: regular assert here hangs execution in release mode!
+    debug_assert!(part1 == 2019945);
 
     let mut pos = 0;
     let mut depth = 0;
@@ -46,5 +49,7 @@ fn main() {
             _ => panic!(),
         }
     }
-    println!("part2: {}", pos * depth);
+    let part2 = pos * depth;
+    println!("part2: {}", part2);
+    assert!(part2 == 1599311480);
 }

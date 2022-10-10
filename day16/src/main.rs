@@ -121,8 +121,12 @@ fn main() {
     mos_alloc::set_limit(16000);
     let mut bits = BITS::from_bytes(include_bytes!("input.txt"));
     let packet = bits.next_packet();
-    println!("part1: {}", sum_versions(&packet));
-    println!("part2: {}", packet.value());
+    let part1 = sum_versions(&packet);
+    println!("part1: {}", part1);
+    assert!(part1 == 993);
+    let part2 = packet.value();
+    println!("part2: {}", part2);
+    assert!(part2 == 144595909277);
 }
 
 #[test]

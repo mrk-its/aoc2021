@@ -185,12 +185,14 @@ fn main() {
         cnt += out.iter().filter(|c| lengths.contains(&c.len())).count();
     }
     println!("part1: {:?}", cnt);
+    assert!(cnt == 344);
 
     let mut sum = 0;
     for (input, out) in &data {
         sum += decode(input, out);
     }
     println!("part2: {:?}", sum);
+    assert!(sum == 1048410);
 }
 
 #[cfg(test)]

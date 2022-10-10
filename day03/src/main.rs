@@ -41,7 +41,10 @@ fn main() {
     let gamma = most_common(&lines);
     let epsilon = (!gamma) & MASK;
 
-    println!("part1: {}", gamma as i32 * epsilon as i32);
+    let part1 = gamma as i32 * epsilon as i32;
+
+    println!("part1: {}", part1);
+    assert!(part1 == 1092896);
 
     let mut input = lines.clone();
     for bit_index in (0..BITS).rev() {
@@ -51,7 +54,6 @@ fn main() {
             .filter(|&&l| ((l ^ cnt) >> bit_index) & 1 == 0)
             .cloned()
             .collect();
-        print!(".");
         if input.len() == 1 {
             break;
         }
@@ -67,12 +69,12 @@ fn main() {
             .filter(|&&l| ((l ^ cnt) >> bit_index) & 1 == 1)
             .cloned()
             .collect();
-        print!(".");
         if input.len() == 1 {
             break;
         }
     }
     let co2 = input[0];
-
-    println!("\npart2: {}", o2 as u32 * co2 as u32);
+    let part2 = o2 as u32 * co2 as u32;
+    println!("part2: {}", part2);
+    assert!(part2 == 4672151)
 }

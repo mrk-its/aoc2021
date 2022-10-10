@@ -149,8 +149,9 @@ fn main() {
     for n in iter {
         result = result.add(n);
     }
-
-    println!("part1: {}", result.magnitude());
+    let part1 = result.magnitude();
+    println!("part1: {}", part1);
+    assert_eq!(part1, 3725);
     let mut max = 0;
     for (i, a) in input.iter().enumerate() {
         for (j, b) in input.iter().enumerate() {
@@ -160,6 +161,7 @@ fn main() {
         }
     }
     println!("part2: {}", max);
+    assert_eq!(max, 4832);
 }
 
 #[test]

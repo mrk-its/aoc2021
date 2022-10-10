@@ -44,7 +44,9 @@ fn main() {
 
     let part1 = simulate(&population, 80);
     println!("part1: {}", part1);
+    assert!(part1 == 355386);
 
     let part2 = simulate(&population, 256);
     println!("part2: {}", part2);
+    assert!(part2 == 1613415325809);
 }

@@ -43,9 +43,11 @@ fn main() {
 
     let min = find_min(&data, cost1);
     println!("part1: {}", min);
+    assert!(min == 343468);
 
     let min = find_min(&data, cost2);
     println!("part2: {}", min);
+    assert!(min == 96086265);
 }
 
 #[cfg(test)]

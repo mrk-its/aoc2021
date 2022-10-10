@@ -80,8 +80,12 @@ fn part2(t1: Vec2, t2: Vec2) -> i16 {
 fn main() {
     let (t1, t2) = parse(include_bytes!("input.txt"));
     println!("{:?} {:?}", t1, t2);
-    println!("part1: {:?}", part1(t1, t2));
-    println!("part2: {:?}", part2(t1, t2));
+    let r1 = part1(t1, t2);
+    assert_eq!(r1, 15400);
+    println!("part1: {:?}", r1);
+    let r2 = part2(t1, t2);
+    println!("part2: {:?}", r2);
+    assert_eq!(r2, 5844);
 }
 
 #[test]

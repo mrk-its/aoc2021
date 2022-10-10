@@ -132,5 +132,7 @@ fn main() {
     }
 
     println!("\npart1: {}", first_score.unwrap());
+    assert!(first_score.unwrap() == 29440);
     println!("part2: {}", last_score);
+    assert!(last_score == 13884)
 }

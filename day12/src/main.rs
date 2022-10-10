@@ -108,9 +108,11 @@ fn main() {
     let mut n_paths = 0;
     visit_dfs(&graph, b"start", Vec::new(), &mut n_paths, checker1, 0);
     println!("part1: {}", n_paths);
+    assert!(n_paths == 4167);
     let mut n_paths = 0;
     visit_dfs(&graph, b"start", Vec::new(), &mut n_paths, checker2, 0);
     println!("part2: {}", n_paths);
+    assert!(n_paths == 98441);
 }
 
 #[cfg(test)]

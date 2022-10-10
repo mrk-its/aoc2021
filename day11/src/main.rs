@@ -98,7 +98,9 @@ fn main() {
         }
     }
     println!("part1: {}", part1_cnt);
+    assert!(part1_cnt == 1637);
     println!("part2: {}", n_step);
+    assert!(n_step == 242);
 }
 
 #[cfg(test)]

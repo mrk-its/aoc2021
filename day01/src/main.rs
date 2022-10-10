@@ -35,6 +35,7 @@ fn main() {
         .count();
 
     println!("part1: {}", part1);
+    assert!(part1 == 1564);
 
     let values = parsed
         .iter()
@@ -46,5 +47,7 @@ fn main() {
         .zip(values.skip(1))
         .filter(|(a, b)| b > a)
         .count();
+
     println!("part2: {}", part2);
+    assert!(part2 == 1611);
 }

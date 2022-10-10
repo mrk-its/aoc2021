@@ -97,6 +97,7 @@ fn main() {
         sum += 1 + board[y][x] as u16
     }
     println!("part1: {}", sum);
+    assert!(sum == 494);
 
     let mut areas: Vec<(i32, usize, usize)> = Vec::new();
 
@@ -106,6 +107,7 @@ fn main() {
     areas.sort_by_key(|k| -k.0);
     let result = &areas[0..3].iter().map(|v| v.0).fold(1, |a, v| a * v);
     println!("part2: {}", result);
+    assert!(*result == 1048128);
 }
 
 #[cfg(test)]
