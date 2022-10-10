@@ -30,7 +30,7 @@ fn main() {
     let part1 = pos * depth;
     println!("part1: {}", part1);
 
-    // WTF: regular assert here hangs execution in release mode!
+    // WTF: assert below hangs execution in release mode!
     assert!(part1 == 2019945);
 
     let mut pos = 0;
