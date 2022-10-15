@@ -37,3 +37,4 @@ jobs:
       - run: cargo run -p day17
       - run: cargo run -p day18
       # - run: cargo run -p day24  # sloooow
+      - run: cargo run -p day25  # slow
