@@ -9,4 +9,4 @@ edition = "2021"
 utils = {path="../utils"}
 ufmt-stdio = "0"
 mos-alloc = "0.2.0"
-bstr = {path="../../bstr", default_features=false}
+bstr = {git="https://github.com/mrk-its/bstr", branch="mos_fix", default_features=false}
