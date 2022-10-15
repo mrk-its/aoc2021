@@ -26,13 +26,13 @@ jobs:
       - run: cargo run -p day06
       - run: cargo run -p day07  # slow
       - run: cargo run -p day08
-      # - run: cargo run -p day09  # panic in part2
-      - run: cargo run -p day10 --release # compilation hangs on dev profile (checked_mul?)
+      - run: cargo run -p day09
+      - run: cargo run -p day10
       - run: cargo run -p day11
       - run: cargo run -p day12  # slow
       - run: cargo run -p day13
       - run: cargo run -p day14
-      - run: cargo run -p day16 --release # compilation hangs on dev profile (checked_mul?)
+      - run: cargo run -p day16
       - run: cargo run -p day17
-      - run: cargo run -p day18   # wtf: undefined reference to `__set_heap_limit'
+      - run: cargo run -p day18
       # - run: cargo run -p day24  # sloooow

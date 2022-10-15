@@ -16,7 +16,7 @@ type Board = Vec<Vec<u8>>;
 const WIDTH: usize = 100;
 const HEIGHT: usize = 100;
 
-const VISITED_SIZE: usize = WIDTH * HEIGHT / 8;
+const VISITED_SIZE: usize = WIDTH * HEIGHT;
 type Visited = utils::BitSet<VISITED_SIZE>;
 
 fn parse_board<'a>(input: impl Iterator<Item = &'a [u8]>) -> Board {
@@ -89,6 +89,7 @@ fn low_points(board: &Board) -> Vec<(usize, usize)> {
 }
 
 fn main() {
+    #[cfg(target_arch="mos")]
     mos_alloc::set_limit(15000);
 
     let board = parse_board(utils::iter_lines!("input.txt"));

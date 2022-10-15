@@ -118,6 +118,7 @@ fn sum_versions(packet: &Packet) -> u64 {
 }
 
 fn main() {
+    #[cfg(target_arch="mos")]
     mos_alloc::set_limit(16000);
     let mut bits = BITS::from_bytes(include_bytes!("input.txt"));
     let packet = bits.next_packet();

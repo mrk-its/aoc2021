@@ -138,7 +138,9 @@ fn parse_line<'a>(input: &mut impl Iterator<Item = &'a u8>) -> SNum {
 }
 
 fn main() {
+    #[cfg(target_arch="mos")]
     mos_alloc::set_limit(16384);
+
     let input = utils::iter_lines!("input.txt")
         .map(|line| parse_line(&mut line.iter()))
         .collect::<Vec<_>>();
