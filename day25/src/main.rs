@@ -4,11 +4,11 @@ utils::entry!(main);
 
 include!(concat!(env!("OUT_DIR"), "/input.rs"));
 
-#[cfg(target_vendor = "a800xl")]
+#[cfg(target_vendor = "atari8")]
 #[path = "atari.rs"]
 mod ui;
 
-#[cfg(not(target_vendor = "a800xl"))]
+#[cfg(not(target_vendor = "atari8"))]
 #[path = "sim.rs"]
 mod ui;
 
@@ -113,9 +113,11 @@ fn main() {
         display.show(&board1, cnt, SOUTH);
         let moved = moved1 || moved2;
 
-        // if cnt == 10 {break;}
         if !moved {
             break;
         }
     }
+    assert_eq!(cnt, 471);
+    #[cfg(target_vendor = "atari8")]
+    loop {}
 }

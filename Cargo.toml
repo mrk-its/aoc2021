@@ -4,7 +4,7 @@ members = [
     "day06", "day07", "day08", "day09", "day10",
     "day11", "day12", "day13", "day14",
     "day16", "day17", "day18",
-    "day24", "utils",
+    "day24", "day25", "utils",
 ]
 
 [profile.dev]
@@ -21,7 +21,4 @@ debug = 2
 panic = "abort"
 
 [patch.crates-io]
-ufmt = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
-ufmt-write = {git="https://github.com/mrk-its/ufmt", branch="ptr_width_16_fix"}
-
-# a800xl-utils = {path = "../a800xl-utils"}
+ufmt-stdio = {git = "https://github.com/mrk-its/ufmt-stdio"}
