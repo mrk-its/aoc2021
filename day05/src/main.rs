@@ -105,7 +105,7 @@ fn main() {
         }
     }
     println!("part1: {}", count);
-    assert!(count == 5442)
+    assert!(count == 5442);
 
     let mut count = 0;
 
@@ -123,7 +123,7 @@ fn main() {
     }
 
     println!("part2: {}", count);
-    assert!(count == 19571)
+    assert!(count == 19571);
 }
 
 #[cfg(test)]
