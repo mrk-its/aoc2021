@@ -22,24 +22,23 @@ jobs:
       - run: rustup toolchain link mos /usr/local/rust-mos
       - run: rustup default mos
       - run: env
-
-      # cargo run 2>&1 | grep "available binaries: " | cut -b 21- | sed 's/, / /g' | xargs -n 1 | grep -v 'day09\|day10\|day12\|day16\|day24' | xargs -n 1 cargo run -p
-      - run: cargo run -p day01 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day02 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day03 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day04 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day05 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day06 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day07 ${{ github.event.inputs.cargo_opts }}  # slow
-      - run: cargo run -p day08 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day09 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day10 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day11 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day12 ${{ github.event.inputs.cargo_opts }}  # slow
-      - run: cargo run -p day13 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day14 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day16 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day17 ${{ github.event.inputs.cargo_opts }}
-      - run: cargo run -p day18 ${{ github.event.inputs.cargo_opts }}
-      # - run: cargo run -p day24  # sloooow
-      - run: cargo run -p day25 ${{ github.event.inputs.cargo_opts }}  # slow
+      - run: echo CARGO_RUN="cargo run ${{ github.event.inputs.cargo_opts }}" >> $GITHUB_ENV
+      - run: ${{ env.CARGO_RUN }} -p day01
+      - run: ${{ env.CARGO_RUN }} -p day02
+      - run: ${{ env.CARGO_RUN }} -p day03
+      - run: ${{ env.CARGO_RUN }} -p day04
+      - run: ${{ env.CARGO_RUN }} -p day05
+      - run: ${{ env.CARGO_RUN }} -p day06
+      - run: ${{ env.CARGO_RUN }} -p day07   # slow
+      - run: ${{ env.CARGO_RUN }} -p day08
+      - run: ${{ env.CARGO_RUN }} -p day09
+      - run: ${{ env.CARGO_RUN }} -p day10
+      - run: ${{ env.CARGO_RUN }} -p day11
+      - run: ${{ env.CARGO_RUN }} -p day12   # slow
+      - run: ${{ env.CARGO_RUN }} -p day13
+      - run: ${{ env.CARGO_RUN }} -p day14
+      - run: ${{ env.CARGO_RUN }} -p day16
+      - run: ${{ env.CARGO_RUN }} -p day17
+      - run: ${{ env.CARGO_RUN }} -p day18
+      # - run: ${{ env.CARGO_RUN }} -p day24  # sloooow
+      - run: ${{ env.CARGO_RUN }} -p day25   # slow
