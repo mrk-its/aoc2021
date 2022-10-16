@@ -19,6 +19,3 @@ opt-level = "s"
 lto = true
 debug = 2
 panic = "abort"
-
-[patch.crates-io]
-ufmt-stdio = {git = "https://github.com/mrk-its/ufmt-stdio"}
