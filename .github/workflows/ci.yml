@@ -5,7 +5,7 @@ on:
       - master
   workflow_dispatch:
     inputs:
-      cargo_options:
+      cargo_opts:
         description: 'cargo options'
         required: false
         default: ''
