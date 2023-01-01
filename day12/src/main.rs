@@ -1,7 +1,5 @@
 #![no_std]
 #![feature(start)]
-#![feature(default_alloc_error_handler)]
-// #![feature(nll)]
 
 utils::entry!(main);
 extern crate alloc;
