@@ -8,5 +8,5 @@
         "macro-error"
     ]
   },
-  "extensions": ["matklad.rust-analyzer", "serayuzgur.crates", "vadimcn.vscode-lldb"]
+  "extensions": ["matklad.rust-analyzer", "serayuzgur.crates", "vadimcn.vscode-lldb", "rust-lang.rust-analyzer"]
 }
