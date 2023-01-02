@@ -4,7 +4,9 @@
 utils::entry!(main);
 extern crate alloc;
 extern crate mos_alloc;
-use alloc::boxed::Box;
+use core::cell::RefCell;
+
+use alloc::rc::Rc;
 use alloc::vec::Vec;
 
 use ufmt_stdio::*;
@@ -12,21 +14,45 @@ use ufmt_stdio::*;
 type Int = u16;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum SNum {
+struct SNum {
+    int: Rc<RefCell<SNumInt>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum SNumInt {
     Regular(Int),
-    Pair(Box<(SNum, SNum)>),
+    Pair((SNum, SNum)),
+}
+
+impl SNumInt {
+    fn deep_clone(&self) -> Self {
+        match self {
+            SNumInt::Regular(_) => self.clone(),
+            SNumInt::Pair((l, r)) => SNumInt::Pair((
+                l.deep_clone(), r.deep_clone()
+            ))
+        }
+    }
 }
 
 impl SNum {
-    fn repl(&self, v: SNum) {
-        let mut_ref: &mut SNum = unsafe { core::mem::transmute(self as *const SNum) };
-        *mut_ref = v;
+    fn new(int: SNumInt) -> Self {
+        Self {
+            int: Rc::new(RefCell::new(int)),
+        }
+    }
+    fn deep_clone(&self) -> Self {
+        SNum::new(self.int.borrow().deep_clone())
+    }
+
+    fn repl(&self, v: SNumInt) -> SNumInt {
+        self.int.replace(v)
     }
     fn add(&self, other: &SNum) -> SNum {
-        SNum::Pair(Box::new((self.clone(), other.clone()))).reduce()
+        SNum::new(SNumInt::Pair((self.clone(), other.clone()))).reduce()
     }
     fn reduce(&self) -> SNum {
-        let result = self.clone();
+        let result = self.deep_clone();
         loop {
             if result.explode() {
                 // println!("exploded: {:?}", self);
@@ -41,82 +67,131 @@ impl SNum {
         result
     }
     fn split(&self) -> bool {
-        match self {
-            SNum::Regular(x) => {
-                if *x > 9 {
-                    let a = *x / 2;
-                    let b = *x - a;
-                    self.repl(SNum::Pair(Box::new((SNum::Regular(a), SNum::Regular(b)))));
-                    true
-                } else {
-                    false
+        let mut repl = None;
+        let ret = {
+            let x = &*(*self.int).borrow();
+            match &x {
+                SNumInt::Regular(x) => {
+                    if *x > 9 {
+                        let a = *x / 2;
+                        let b = *x - a;
+                        repl = Some(SNumInt::Pair((
+                            SNum::new(SNumInt::Regular(a)),
+                            SNum::new(SNumInt::Regular(b)),
+                        )));
+                        true
+                    } else {
+                        false
+                    }
                 }
+                SNumInt::Pair(pair) => pair.0.split() || pair.1.split(),
             }
-            SNum::Pair(pair) => pair.0.split() || pair.1.split(),
+        };
+        if let Some(repl) = repl {
+            self.repl(repl);
         }
+        ret
     }
-    fn _explode<'a>(
-        &'a self,
+    fn _explode(
+        &self,
         depth: i32,
         exploded: &mut Option<SNum>,
-        left: &mut Option<&'a SNum>,
-        right: &mut Option<&'a SNum>,
+        left: &mut Option<SNum>,
+        right: &mut Option<SNum>,
     ) {
-        match self {
-            SNum::Regular(_) => {
-                if exploded.is_none() {
-                    *left = Some(self)
-                } else if right.is_none() {
-                    *right = Some(self)
-                }
-            }
-            SNum::Pair(pair) => {
-                if depth == 0 && exploded.is_none() {
-                    match &**pair {
-                        (SNum::Regular(_), SNum::Regular(_)) => {
-                            *exploded = Some(self.clone());
-                            self.repl(SNum::Regular(0));
-                        }
-                        _ => (),
+        let mut repl = false;
+        {
+            let x = &*(*self.int).borrow();
+            match &x {
+                SNumInt::Regular(_) => {
+                    if exploded.is_none() {
+                        left.replace(self.clone());
+                    } else if right.is_none() {
+                        right.replace(self.clone());
                     }
-                } else {
-                    pair.0._explode(depth - 1, exploded, left, right);
-                    pair.1._explode(depth - 1, exploded, left, right);
+                }
+                SNumInt::Pair(pair) => {
+                    if depth == 0 && exploded.is_none() {
+                        let l = &*(*pair.0.int).borrow();
+                        let r = &*(*pair.1.int).borrow();
+                        match &(l, r) {
+                            (SNumInt::Regular(_), SNumInt::Regular(_)) => {
+                                repl = true;
+                            }
+                            _ => (),
+                        }
+                    } else {
+                        pair.0._explode(depth - 1, exploded, left, right);
+                        pair.1._explode(depth - 1, exploded, left, right);
+                    }
                 }
             }
         }
+        if repl {
+            exploded.replace(SNum::new(self.repl(SNumInt::Regular(0))));
+        }
     }
+
     fn explode(&self) -> bool {
         let mut exploded: Option<SNum> = None;
-        let mut left: Option<&SNum> = None;
-        let mut right: Option<&SNum> = None;
-        self._explode(4, &mut exploded, &mut left, &mut right);
-        // println!("exploded pair: {:?}, left: {:?}, right: {:?}", exploded, left, right);
-        match exploded {
-            Some(SNum::Pair(p)) => {
-                let (l, r) = if let (SNum::Regular(l), SNum::Regular(r)) = *p {
-                    (l, r)
-                } else {
-                    panic!("pair with non-regular numbers");
-                };
+        let mut left: Option<SNum> = None;
+        let mut right: Option<SNum> = None;
 
-                if let Some(SNum::Regular(a)) = left {
-                    left.unwrap().repl(SNum::Regular(*a + l))
-                }
-                if let Some(SNum::Regular(a)) = right {
-                    right.unwrap().repl(SNum::Regular(*a + r))
-                }
+        let mut left_replacement = None;
+        let mut right_replacement = None;
 
-                true
-            }
-            None => false,
-            _ => panic!("wrong exploded"),
+        {
+            self._explode(4, &mut exploded, &mut left, &mut right);
+            let exploded = match exploded {
+                Some(v) => v,
+                None => {
+                    return false;
+                }
+            };
+            let x = &*(*exploded.int).borrow();
+            // println!("exploded pair: {:?}, left: {:?}, right: {:?}", exploded, left, right);
+            match x {
+                SNumInt::Pair(p) => {
+                    let l = &*(*p.0.int).borrow();
+                    let r = &*(*p.1.int).borrow();
+                    let (l, r) = if let (SNumInt::Regular(l), SNumInt::Regular(r)) = (l, r) {
+                        (l, r)
+                    } else {
+                        println!("pair with non-regular numbers");
+                        panic!();
+                    };
+
+                    if let Some(x) = &left {
+                        let x = &*(*x.int).borrow();
+                        if let SNumInt::Regular(a) = x {
+                            left_replacement.replace(*a + l);
+                        }
+                    };
+
+                    if let Some(x) = &right {
+                        let x = &*(*x.int).borrow();
+                        if let SNumInt::Regular(a) = x {
+                            right_replacement.replace(*a + r);
+                        }
+                    }
+                    true
+                }
+                _ => panic!("wrong exploded"),
+            };
         }
+        if let Some(a) = left_replacement {
+            left.as_mut().unwrap().repl(SNumInt::Regular(a));
+        }
+        if let Some(a) = right_replacement {
+            right.as_mut().unwrap().repl(SNumInt::Regular(a));
+        }
+
+        true
     }
     fn magnitude(&self) -> Int {
-        match self {
-            SNum::Regular(x) => *x,
-            SNum::Pair(pair) => 3 * pair.0.magnitude() + 2 * pair.1.magnitude(),
+        match &*(*self.int).borrow() {
+            SNumInt::Regular(x) => *x,
+            SNumInt::Pair(pair) => 3 * pair.0.magnitude() + 2 * pair.1.magnitude(),
         }
     }
 }
@@ -124,21 +199,22 @@ impl SNum {
 fn parse_line<'a>(input: &mut impl Iterator<Item = &'a u8>) -> SNum {
     let c = *input.next().unwrap();
     if c >= 48 && c < 48 + 10 {
-        SNum::Regular(c as Int - 48)
+        SNum::new(SNumInt::Regular(c as Int - 48))
     } else if c == b'[' {
         let left = parse_line(input);
         assert_eq!(*input.next().unwrap(), b',');
         let right = parse_line(input);
         assert_eq!(*input.next().unwrap(), b']');
-        SNum::Pair(Box::new((left, right)))
+        SNum::new(SNumInt::Pair((left, right)))
     } else {
+        println!("parse panic!");
         panic!()
     }
 }
 
 fn main() {
-    #[cfg(target_arch="mos")]
-    mos_alloc::set_limit(16384);
+    #[cfg(target_arch = "mos")]
+    mos_alloc::set_limit(48000);
 
     let input = utils::iter_lines!("input.txt")
         .map(|line| parse_line(&mut line.iter()))
