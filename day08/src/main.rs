@@ -175,7 +175,7 @@ fn decode(input: &Vec<Display>, out: &Vec<Display>) -> u32 {
 }
 
 fn main() {
-    #[cfg(target_arch="mos")]
+    #[cfg(target_arch = "mos")]
     mos_alloc::set_limit(12000);
     let data = parse(utils::iter_lines!("input.txt"));
     let mut cnt = 0;

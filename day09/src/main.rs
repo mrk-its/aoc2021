@@ -88,7 +88,7 @@ fn low_points(board: &Board) -> Vec<(usize, usize)> {
 }
 
 fn main() {
-    #[cfg(target_arch="mos")]
+    #[cfg(target_arch = "mos")]
     mos_alloc::set_limit(15000);
 
     let board = parse_board(utils::iter_lines!("input.txt"));
